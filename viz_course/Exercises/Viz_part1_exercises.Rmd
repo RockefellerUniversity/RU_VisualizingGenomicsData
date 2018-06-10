@@ -1,0 +1,173 @@
+---
+title: "Visualizing Genomics Data in Bioconductor exercises"
+author: "Tom Carroll"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F,eval=T)
+```
+
+
+In this practical we will be reviewing some of methods in the GViz package to plot genomics data. In the belows sections we review axis creation, simple data plotting and visualization of annotation and gene models.
+
+In todays session we will continue to review the Myc ChIPseq we were working on in our last sessions.
+
+This include Myc ChIP-seq for MEL and Ch12 celllines.
+
+Information and files for the [Myc ChIPseq in MEL cell line can be found here](https://www.encodeproject.org/experiments/ENCSR000EUA/)
+
+Information and files for the [Myc ChIPseq in Ch12 cell line can be found here](https://www.encodeproject.org/experiments/ENCSR000ERN/)
+
+Preprocessed data for this practical session can be found in the **Data** directory.
+
+
+# Axis and data tracks
+
+* Create a plot of an axis from 100kb to 1Mb
+```{r}
+suppressPackageStartupMessages(library(Gviz))
+
+library(Gviz)
+myAxisTrack <- GenomeAxisTrack()
+plotTracks(myAxisTrack,from=100000,to=1000000)
+```
+
+* Create a new axis showing a relative scale of 450kb
+
+```{r}
+plotTracks(myAxisTrack,from=100000,to=1000000,scale=450000)
+```
+
+* Replot axis from 100kb to 1Mb and indicate the 5 to 3 direction and add the addition minor tick marks.
+
+```{r}
+plotTracks(myAxisTrack,from=100000,to=1000000,
+           add53=T,
+           littleTicks=T)
+```
+
+*Load in the peak data and plot peaks for both samples over the region chr2:135,522,235-135,531,066
+
+```{r, warning=F}
+library(rtracklayer)
+myc_melPeaks <- import.bed("../Data/myc_mel.bed")
+mycmelpeaksDT <- DataTrack(myc_melPeaks,chromosome="chr2",
+                   from=135522235,
+                   to=135531066,
+                   name="Mel_peaks",
+                   type="b")
+myc_ch12Peaks <- import.bed("../Data/myc_ch12.bed")
+mycch12peaksDT <- DataTrack(myc_ch12Peaks,chromosome="chr2",
+                   from=135522235,
+                   to=135531066,
+                   name="ch12_peaks",
+                   type="b")
+plotTracks(c(mycmelpeaksDT,mycch12peaksDT),
+           chromosome="chr2",
+           from=135522235,
+           to=135531066,
+           type="b",pch=15,cex=2)
+```
+
+* Add coverage data to this plot from the **myc_mel.bw** and **myc_ch12.bw** files.
+
+```{r}
+library(rtracklayer)
+myc_melSignal <- import.bw("../Data/myc_mel.bw",as="GRanges")
+mycmelsigDT <- DataTrack(myc_melSignal,chromosome="chr2",
+                   from=135522235,
+                   to=135531066,
+                   name="Mel_Coverage",
+                   type=("hist"))
+myc_ch12Signal <- import.bw("../Data/myc_ch12.bw",as="GRanges")
+mycch12sigDT <- DataTrack(myc_ch12Signal,chromosome="chr2",
+                   from=135522235,
+                   to=135531066,
+                   name="CH12_Coverage",
+                   type=("hist"))
+plotTracks(c(mycmelsigDT,mycch12sigDT),
+           chromosome="chr2",
+           from=135522235,
+           to=135531066,
+           ylim=c(0,40),
+           type=("hist"))
+
+plotTracks(c(mycmelpeaksDT,mycmelsigDT,mycch12peaksDT,mycch12sigDT),
+           chromosome="chr2",
+           from=135522235,
+           to=135531066,
+           ylim=c(0,40),cex=2)
+```
+
+* Add a scale to show half the range.
+
+```{r}
+myAxisTrack <- GenomeAxisTrack()
+
+plotTracks(c(myAxisTrack,mycmelpeaksDT,mycmelsigDT,mycch12peaksDT,mycch12sigDT),
+           chromosome="chr2",
+           from=135522235,
+           to=135531066,
+           ylim=c(0,40),cex=1,scale=0.5)
+```
+
+
+# Annotation and GeneRegion tracks
+
+* Using an AnnotationTrack create the below plot.
+
+```{r,warning=F}
+
+suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(Gviz))
+
+library(GenomicRanges)
+library(Gviz)
+
+regions <- GRanges(seqnames=c("chr1"),IRanges(
+                   start=c(10,80,110),end=c(50,90,220)))
+names(regions) <- c("1","2","3")
+
+strand(regions) <- c("+","*","+")
+annoT <- AnnotationTrack(regions,
+                group = c("Ann1",
+                          "Ann2",
+                          "Ann1"))
+
+plotTracks(annoT,groupAnnotation="group")
+                
+
+```
+
+* Flatten the previous plot and change the colour
+
+```{r}
+
+plotTracks(annoT,groupAnnotation="group",stacking="dense",col="red",fill="red")
+                
+```
+
+* Load in the TxDB object for mm9 and create a plot of transcripts Igll1 and Vpreb1 and Topb3b. (at chr16:16,858,904-16,895,526)
+
+```{r,warning=F}
+suppressPackageStartupMessages(library(TxDb.Mmusculus.UCSC.mm9.knownGene))
+
+library(TxDb.Mmusculus.UCSC.mm9.knownGene)
+
+gtTrack <- GeneRegionTrack(TxDb.Mmusculus.UCSC.mm9.knownGene,
+                chromosome="chr16",
+                start=16858904,
+                end=16895526)
+plotTracks(gtTrack,transcriptAnnotation="name")
+                
+```
+
+
+* Recreate the plot with just the meta gene representation of transcripts shown.
+
+```{r}
+plotTracks(gtTrack,collapseTranscripts="meta",
+           transcriptAnnotation="name")
+```
+
