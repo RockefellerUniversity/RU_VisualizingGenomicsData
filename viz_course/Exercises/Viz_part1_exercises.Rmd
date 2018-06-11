@@ -6,6 +6,10 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = F,eval=T)
+library(Rsamtools)
+library(GenomicAlignments)
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+library(org.Mm.eg.db)
 ```
 
 
@@ -20,6 +24,13 @@ Information and files for the [Myc ChIPseq in MEL cell line can be found here](h
 Information and files for the [Myc ChIPseq in Ch12 cell line can be found here](https://www.encodeproject.org/experiments/ENCSR000ERN/)
 
 Preprocessed data for this practical session can be found in the **Data** directory.
+
+For later exercises we will be using data from Activated and naive T-regulatory cells from Christina Leslie's lab.
+
+Naive Treg cell data information can be found [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and the Bam file found [here](https://www.encodeproject.org/files/ENCFF906UTB/@@download/ENCFF906UTB.bam)
+
+Activated Treg cell data information can be found [here](https://www.encodeproject.org/experiments/ENCSR726DNP/) and the Bam file found [here](https://www.encodeproject.org/files/ENCFF726OCP/@@download/ENCFF726OCP.bam)
+
 
 
 # Axis and data tracks
@@ -169,5 +180,68 @@ plotTracks(gtTrack,transcriptAnnotation="name")
 ```{r}
 plotTracks(gtTrack,collapseTranscripts="meta",
            transcriptAnnotation="name")
+```
+
+
+# Some real data.
+
+* Download the RNAseq data from Activated and Naive Bcells and extract the coverage around (+/- 2000bp of TSS and TTS) of Ccnd3 gene. Make a plot of coverage for both samples alongside its gene model.
+
+**You will need to run this command at beginning of script to avoid issues with chromosomes names. It will tell you this in warning**
+
+- **options(ucscChromosomeNames=FALSE)**
+
+
+```{r, cache=TRUE,message=FALSE,warning=FALSE}
+options(ucscChromosomeNames=FALSE)
+library(Rsamtools)
+library(GenomicAlignments)
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+library(org.Mm.eg.db)
+
+myGenes <- genes(TxDb.Mmusculus.UCSC.mm10.knownGene)
+ccdn3AsEntrez <- select(org.Mm.eg.db,keys="Ccnd3",columns = "ENTREZID",keytype = "SYMBOL")
+ccdn3Pos <- myGenes[myGenes$gene_id %in% ccdn3AsEntrez$ENTREZID]
+start(ccdn3Pos) <- start(ccdn3Pos)-1000
+end(ccdn3Pos) <- end(ccdn3Pos)+1000
+
+indexBam("~/Downloads/ENCFF726OCP.bam")
+indexBam("~/Downloads/ENCFF906UTB.bam")
+
+activatedReads <- readGAlignments("~/Downloads/ENCFF726OCP.bam",param=ScanBamParam(which = ccdn3Pos))
+naiveReads <- readGAlignments("~/Downloads/ENCFF906UTB.bam",param=ScanBamParam(which = ccdn3Pos))
+
+naiveCov <- coverage(naiveReads)
+actCov <- coverage(activatedReads)
+
+naiveCov <- GRanges(naiveCov)
+actCov <- GRanges(actCov)
+library(Gviz)
+naivePlot <- DataTrack(naiveCov,chromosome=as.vector(seqnames(ccdn3Pos)),
+                   from=start(ccdn3Pos),
+                   to=end(ccdn3Pos),
+                   name="naive",
+                   type=("hist"))
+actPlot <- DataTrack(actCov,chromosome=as.vector(seqnames(ccdn3Pos)),
+                   from=start(ccdn3Pos),
+                   to=end(ccdn3Pos),
+                   name="activated",
+                   type=("hist"))
+
+gtTrack <- GeneRegionTrack(TxDb.Mmusculus.UCSC.mm10.knownGene,
+                            chromosome=as.vector(seqnames(ccdn3Pos)),
+                            from=start(ccdn3Pos),
+                            to=end(ccdn3Pos))
+
+plotTracks(c(naivePlot,actPlot,gtTrack),
+           chromosome=as.vector(seqnames(ccdn3Pos)),
+           from=start(ccdn3Pos),
+           to=end(ccdn3Pos),
+           type=("hist"),
+           transcriptAnnotation="Name")
+
+
+
+
 ```
 
