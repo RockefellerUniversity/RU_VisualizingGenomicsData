@@ -1,0 +1,245 @@
+---
+title: "Visualizing Genomics Data in Bioconductor exercises"
+author: "Tom Carroll"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F,eval=TRUE)
+```
+
+In this practical we will be reviewing some of methods in the GViz package to plot genomics data. In the belows sections we review plotting aligned data from BAM files and including external annotation and data sources.
+
+In todays session we will continue to review the Myc ChIPseq we were working on in our last sessions.
+
+This include Myc ChIP-seq for MEL and Ch12 celllines.
+
+Information and files for the [Myc ChIPseq in MEL cell line can be found here](https://www.encodeproject.org/experiments/ENCSR000EUA/)
+
+Information and files for the [Myc ChIPseq in Ch12 cell line can be found here](https://www.encodeproject.org/experiments/ENCSR000ERN/)
+
+Preprocessed data for this practical session can be found in the **Data** directory.
+
+For later exercises we will be using data from Activated and naive T-regulatory cells from Christina Leslie's lab.
+
+Naive Treg cell data information can be found [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and the Bam file found [here](https://www.encodeproject.org/files/ENCFF906UTB/@@download/ENCFF906UTB.bam)
+
+Activated Treg cell data information can be found [here](https://www.encodeproject.org/experiments/ENCSR726DNP/) and the Bam file found [here](https://www.encodeproject.org/files/ENCFF726OCP/@@download/ENCFF726OCP.bam)
+
+
+* With the TxDB object for mm9 recreate a plot of transcripts Igll1 and Vpreb1 and Topb3b.
+
+
+```{r,warning=F}
+
+suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(Gviz))
+suppressPackageStartupMessages(library(TxDb.Mmusculus.UCSC.mm9.knownGene))
+
+
+library(GenomicRanges)
+library(Gviz)
+library(TxDb.Mmusculus.UCSC.mm9.knownGene)
+
+gtTrack <- GeneRegionTrack(TxDb.Mmusculus.UCSC.mm9.knownGene,
+                chromosome="chr16",
+                start=16858904,
+                end=16895526)
+plotTracks(gtTrack,transcriptAnnotation="name")
+
+
+
+```
+
+
+* Plot the signal over this region from the myc_mel.bam and myc_ch12.bam alongside any peaks (*there may be none?*) and the gene models. 
+
+
+```{r,warning=F}
+suppressPackageStartupMessages(library(rtracklayer))
+
+library(rtracklayer)
+
+  mycmelReadsAT <- AlignmentsTrack("../Data/myc_mel_Igll1Region.bam")
+  mycch12ReadsAT <- AlignmentsTrack("../Data/myc_ch12_Igll1Region.bam")
+
+
+  myc_melPeaks <- import.bed("../Data/myc_mel.bed")
+  mycmelpeaksDT <- DataTrack(myc_melPeaks,chromosome="chr16",
+                   from=16858904,
+                   to=16895526,
+                   name="Mel_peaks",
+                   type="b")
+  myc_ch12Peaks <- import.bed("../Data/myc_ch12.bed")
+  mycch12peaksDT <- DataTrack(myc_ch12Peaks,chromosome="chr16",
+                   from=16858904,
+                   to=16895526,
+                   name="ch12_peaks",
+                   type="b")
+
+   
+   plotTracks(c(mycmelReadsAT,mycch12ReadsAT,
+                mycmelpeaksDT,mycch12peaksDT,
+                gtTrack),
+              chromosome="16",
+              from=16858904,
+              to=16895526,
+              type=c("coverage","b"))
+
+
+```
+
+
+With TxDB object for **mm10** recreate a plot of transcript Bdnf1. (*Remembering major revisions of genome may change coordinates of genes*)
+
+
+```{r,warning=F}
+
+suppressPackageStartupMessages(library(TxDb.Mmusculus.UCSC.mm10.knownGene))
+
+
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+gtTrack <- GeneRegionTrack(TxDb.Mmusculus.UCSC.mm10.knownGene,
+                chromosome="chr2",
+                start=109672700,
+                end=109729043)
+plotTracks(gtTrack,transcriptAnnotation="Name")
+
+
+
+```
+
+
+* Create a plot just showing the pileup of reads from the Kidney tissue over these genes. (*Listen to the warnings from R if you have problems loading Alignments!*)
+
+```{r,warning=F}
+
+  options(ucscChromosomeNames=FALSE)
+
+  kidneyReadsAT <- AlignmentsTrack("../Data/Kidney.bam")
+  plotTracks(c(kidneyReadsAT,
+               gtTrack),
+             chromosome="chr2",
+             start=109672700,
+             end=109729043,
+             transcriptAnnotation="Name",
+             type="pileup")
+
+
+
+```
+
+
+* Create a plot showing the coverage and splicing information over these genes for the Kidney and Brain tissue.
+
+```{r,warning=F}
+
+  options(ucscChromosomeNames=FALSE)
+
+  brainReadsAT <- AlignmentsTrack("../Data/Brain.bam")
+  plotTracks(c(kidneyReadsAT,
+               brainReadsAT,
+               gtTrack),
+             chromosome="chr2",
+             start=109672700,
+             end=109729043,
+             transcriptAnnotation="Name",
+             type=c("sashimi","coverage"))
+
+
+
+```
+
+
+
+* Retrieve and plot Ensembl genes for mm10 from Biomart for Bdnf1 (*Ensembl uses 16 instead of chr16 here*).
+
+
+```{r,warning=F,eval=FALSE}
+options(ucscChromosomeNames=FALSE)
+
+suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(Gviz))
+suppressPackageStartupMessages(library(TxDb.Mmusculus.UCSC.mm9.knownGene))
+
+
+library(GenomicRanges)
+library(Gviz)
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+
+
+bgrTrack <- BiomartGeneRegionTrack(genome="mm10",
+                                   start=109672700,
+                                   end=109729043,
+                                   chromosome = "2",
+                                   name="ENSEMBL")
+
+plotTracks(bgrTrack,chromosome="2",
+           from=109672700,to=109729043)
+
+```
+
+![](../imgs/exercise1.png)
+
+* Create a plot of the Ensembl annotations for Bdnf1 and plot alongside the splicing information for Bdnf1. (*We will need to fix seqlevels() and seqnames() for our BiomartGeneRegionTrack ranges*)
+
+```{r,warning=F,eval=FALSE}
+options(ucscChromosomeNames=FALSE)
+
+suppressPackageStartupMessages(library(rtracklayer))
+
+  library(rtracklayer)
+
+  seqlevels(bgrTrack@range) <- "chr2"
+  seqnames(bgrTrack@range) <- "chr2"
+
+  kidneyReadsAT <- AlignmentsTrack("../Data/Kidney.bam")
+  brainReadsAT <- AlignmentsTrack("../Data/Brain.bam")
+  plotTracks(c(kidneyReadsAT,
+               brainReadsAT,
+               bgrTrack),
+             chromosome = "chr2",
+             from = 109672700, 
+             to=109729043,
+             transcriptAnnotation="Name",
+             type=c("sashimi","coverage"))
+
+```
+
+![](../imgs/exercise2.png)
+
+* Add in some information on know SNPs using the UCSC snp137Mult table.
+
+```{r,warning=F,eval=F}
+
+snpTrack <- UcscTrack(genome = "mm10", chromosome = "chr2",track = "snp137Mult",
+from = 109672700, to = 109729043, trackType = "AnnotationTrack",
+start = "chromStart", end = "chromEnd", id = "name",
+feature = "func", strand = "strand", shape = "box",
+stacking = "dense", fill = "black", name = "SNPs")
+
+save(snpTrack,file="../RData/snps.RData")
+```
+
+```{r,warning=F,eval=F}
+load(file="../Data/snps.RData")
+```
+
+
+```{r,warning=F,eval=FALSE}
+options(ucscChromosomeNames=FALSE)
+
+  plotTracks(c(snpTrack,
+               kidneyReadsAT,
+               brainReadsAT,
+               bgrTrack),
+             chromosome = "chr2",
+             from = 109672700, 
+             to=109729043,
+             transcriptAnnotation="Name",
+             type=c("sashimi","coverage"),
+             size=c(0.2,1,1,1))
+
+```
+
+![](../imgs/exercise3.png)

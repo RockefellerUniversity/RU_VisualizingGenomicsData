@@ -666,23 +666,23 @@ The **Ucsctrack()** constructor and object allow for the query and track constru
 ---
 ##Bringing in External data. Tracks from UCSC 
 
- 
- 
-To understand which tables are available we can query the **rtracktables** package to identify track and table names. 
+To understand which tables are available we can query the **rtracklayer** package to identify track and table names. 
+
+We can use the **broswerSession()** function to connect to UCSC and the **genome()** function to establish the genome of interest.
+
+We can then review available tracks using the **trackNames()** function.
  
 ```{r a1, echo=T,fig.width=10,fig.height=5,cache=T} 
 library(rtracklayer) 
 session <- browserSession() 
 genome(session) <- "hg19" 
 trackNames(session) 
-query <- ucscTableQuery(session, "Ensembl Genes", 
-                        GRangesForUCSCGenome("hg19", "chr7", 
-                                             IRanges(26591341,27034958))) 
-tableNames(query) 
 ``` 
+
 ---
 ##Bringing in External data. Tracks from UCSC 
 
+We can identify available tables by using the **ucscTableQuery()** function and the **tableNames()** function.
  
  
 ```{r b1, echo=T,fig.width=10,fig.height=5,cache=T,dependson="a1"} 
@@ -752,6 +752,24 @@ conservationTrack <- UcscTrack(genome = "hg19", chromosome = "chr5",track = "Con
 ---
 ##Bringing in External data. Tracks from UCSC as DataTrack 
 
+```{r f11, eval=F,echo=T,fig.width=10,fig.height=5,cache=T,dependson="e1"} 
+conservationTrack <- UcscTrack(genome = "hg19",
+                               chromosome = "chr5",
+                               track = "Conservation",
+                               table = "phyloP100wayAll",
+                               from = 135313003,to = 135313570,
+                               trackType = "DataTrack",
+                               start = "start", end = "end", 
+                               data = "score",type = "hist", window = "auto",
+                               col.histogram = "darkblue",fill.histogram = "darkblue",
+                               ylim = c(-3.7, 4),name = "Conservation") 
+ 
+``` 
+ 
+ 
+---
+##Bringing in External data. Tracks from UCSC as DataTrack 
+
  
  
 With the inclusion of conservation alongside the coverage from CTCF peaks we can see a spike in conservation around the CTCF peak summit. We include a relative scale and increase the size of text for completeness. 
@@ -778,17 +796,14 @@ plotTracks(c(conservationTrack,peakReads,genomeAxis),
 ##Exercises 
 
  
- 
- 
-Time for exercises! [Link here](https://mrccsc.github.io/VisualisingGenomicsData/exercises/ExternalData_Exercises.html) 
+Time for exercises! [Link here](../../Exercises/Viz_part2_exercises.html) 
  
 ---
 ##Solutions 
 
  
+Time for solutions! [Link here](../../Answers/Viz_part2_answers.html) 
  
- 
-Time for solutions! [Link here](https://mrccsc.github.io/VisualisingGenomicsData/solutions/ExternalData_Solutions.html) 
- 
+
  
  
