@@ -237,7 +237,7 @@ AllChanges <- results(dds2)
 ```
 
 ---
-## Visualing RNAseq data.
+## Visualizing RNAseq data.
 
 One of the first steps of working with count data for visualisation is commonly to transform the integer count data to log2 scale.
 
@@ -251,7 +251,7 @@ normLog2Counts
 ```
 
 ---
-## Visualing RNAseq data.
+## Visualizing RNAseq data.
 
 We can extract our normalised and transformed  counts from the **DESeqTransform** object using the **assay()** function.
 
@@ -261,7 +261,7 @@ boxplot(matrixOfNorm)
 ```
 
 ---
-## Visualing RNAseq data.
+## Visualizing RNAseq data.
 
 When visualising our signal however we now will have a similar problem with smaller counts having higher variance. This may cause changes in smaller counts to have undue influence in visualisation and clustering.
 
@@ -272,7 +272,7 @@ meanSdPlot(matrixOfNorm)
 
 
 ---
-## Visualing RNAseq data.
+## Visualizing RNAseq data.
 
 We can apply an **rlog** transformation to our data using the **rlog()** function which will attempt to shrink the variance for genes based on their mean expression.
 
@@ -282,7 +282,7 @@ rlogTissue
 ```
 
 ---
-## Visualing RNAseq data.
+## Visualizing RNAseq data.
 
 Again we can extract the matrix of transformed counts with the **assay()** function and plot the mean/variance relationship. Here we can see the shrinkage of variance for low count genes. 
 
@@ -295,7 +295,7 @@ meanSdPlot(rlogMatrix)
 ---
 ## Dimension reduction.
 
-Since we have often have measured 1000s of genes over multiple genes we will often try and simplify this too a few dimensions or meta/eigen genes which represent major patterns of signal across samples found.
+Since we have often have measured 1000s of genes over multiple samples/groups we will often try and simplify this too a few dimensions or meta/eigen genes which represent major patterns of signal across samples found.
 
 We hope the strongest patterns or sources of variation in our data are correlated with sample groups and so dimention reduction offers a methods to method to visually identify reproducibity of samples.
 
@@ -304,6 +304,7 @@ Common methods of dimention reduction include Principal Component Analysis, Mult
 <div align="center">
 <img src="../../imgs/metaGeneFull.png" alt="igv" height="300" width="800">
 </div>
+
 ---
 ## PCA
 
