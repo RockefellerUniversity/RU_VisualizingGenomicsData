@@ -1,0 +1,124 @@
+---
+title: "Visualizing Genomics Data in Bioconductor exercises"
+author: "Tom Carroll"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,eval=TRUE)
+# load("../../Data/gC_TissueFull.RData")
+# geneCounts <- geneCounts_Tissue
+# colData(geneCounts)$Tissue <- c("Heart", "Heart","Kidney","Kidney","Liver","Liver") 
+# geneCounts <- geneCounts[rowSums(assay(geneCounts)) > quantile(rowSums(assay(geneCounts)),0.4)]
+# save(geneCounts,file="../../viz_course/Data/tissueCounts.RData")
+```
+
+In this practical we will be reviewing some of methods for visualising and clustering data from ChIPseq data.
+
+
+# Data
+
+In todays session we will continue to review the Myc ChIPseq we were working on in our last sessions.
+
+This include Myc ChIP-seq for MEL and Ch12 celllines.
+
+Information and files for the [Myc ChIPseq in MEL cell line can be found here](https://www.encodeproject.org/experiments/ENCSR000EUA/)
+
+Information and files for the [Myc ChIPseq in Ch12 cell line can be found here](https://www.encodeproject.org/experiments/ENCSR000ERN/)
+
+BigWig for Mel cellline is [here](https://www.encodeproject.org/files/ENCFF388ZJX/@@download/ENCFF388ZJX.bigWig)
+,Peaks for Mel cellline is [here](https://www.encodeproject.org/files/ENCFF591LSO/@@download/ENCFF591LSO.bed.gz)
+,BAM for Mel cellline is [here](https://www.encodeproject.org/files/ENCFF049TYL/@@download/ENCFF049TYL.bam)
+
+BigWig for Ch12 cellline is [here](https://www.encodeproject.org/files/ENCFF259VHD/@@download/ENCFF259VHD.bigWig)
+,Peaks for Ch12 cellline is [here](https://www.encodeproject.org/files/ENCFF994LFX/@@download/ENCFF994LFX.bed.gz)
+,BAM for Ch12 cellline is [here](https://www.encodeproject.org/files/ENCFF006JXP/@@download/ENCFF006JXP.bam)
+
+- Create seperate profile plots for both Mel and Ch12 Myc signal over their respective Myc peaks. If you have troubles with memory you can try importing from BAM.
+
+
+```{r a,eval=FALSE,message=FALSE,warning=FALSE}
+library(soGGi)
+MelPeaks <- read.delim("~/Downloads/ENCFF591LSO.bed.gz",sep="\t",h=F)
+MelGR <- GRanges(MelPeaks[,1],IRanges(MelPeaks[,2],MelPeaks[,3]))
+Ch12Peaks <- read.delim("~/Downloads/ENCFF994LFX.bed.gz",sep="\t",h=F)
+Ch12GR <- GRanges(Ch12Peaks[,1],IRanges(Ch12Peaks[,2],Ch12Peaks[,3]))
+library(Rsamtools)
+indexBam("~/Downloads/ENCFF049TYL.bam")
+indexBam("~/Downloads/ENCFF006JXP.bam")
+melSi <- regionPlot("~/Downloads/ENCFF049TYL.bam",
+                     MelGR,
+                     format = "bam",
+                     style = "point")
+
+ch12Si <- regionPlot("~/Downloads/ENCFF006JXP.bam",
+                     Ch12GR,
+                     format = "bam",
+                     style = "point")
+plotRegion(melSi)
+plotRegion(ch12Si)
+```
+
+![](../imgs/Exercise1.png)
+
+![](../imgs/Exercise2.png)
+
+- Produce heatmaps for peaks on chr19 for each sample.
+
+```{r b,cache=TRUE,eval=FALSE,message=FALSE,warning=FALSE,dependson="a"}
+library(RColorBrewer)
+ka <- plotHeatmap(melSi[seqnames(melSi) %in% "chr19",],col = colorRampPalette(blues9)(100)
+            )
+kb <- plotHeatmap(ch12Si[seqnames(ch12Si) %in% "chr19",],col = colorRampPalette(blues9)(100)
+            )
+
+```
+
+![](../imgs/Exercise4.png)
+
+![](../imgs/Exercise5.png)
+
+- for the Mel sample plot the profile of peaks overlapping and not overlapping Ch12 peaks.
+
+```{r c,cache=TRUE,eval=FALSE,message=FALSE,warning=FALSE,dependson="b"}
+Mel_Unique <- MelGR[!MelGR %over% ch12Si]
+Common <- MelGR[MelGR %over% ch12Si]
+plotRegion(melSi,
+           gts=c(Mel_Unique=Mel_Unique,
+                 Common=Common))
+```
+
+![](../imgs/Exercise6.png)
+
+- Colour and customise the plot as shown below
+
+```{r d,cache=TRUE,eval=FALSE,message=FALSE,warning=FALSE,dependson="b"}
+library(ggplot2)
+p <- plotRegion(melSi,
+           gts=c(Mel_Unique=Mel_Unique,
+                 Common=Common))
+p+scale_colour_manual(values=c(Mel_Unique="red",Common="green"))+theme(strip.background = element_rect(fill="white"))
+```
+
+![](../imgs/Exercise7.png)
+
+- Make a new profile plot of the Mel and Ch12 signal over our previously defined common peaks.
+
+
+```{r k,cache=TRUE,eval=FALSE,message=FALSE,warning=FALSE,dependson="b"}
+melSi2 <- regionPlot("~/Downloads/ENCFF049TYL.bam",
+                     Common,
+                     format = "bam",
+                     style = "point")
+
+ch12Si2 <- regionPlot("~/Downloads/ENCFF006JXP.bam",
+                     Common,
+                     format = "bam",
+                     style = "point")
+commonSig <- c(melSi2,ch12Si2)
+
+plotRegion(commonSig,groupBy = "Sample",freeScale = TRUE,colourBy = "Sample")
+```
+
+![](../imgs/ExerciseEnd.png)
+
