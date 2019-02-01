@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Visualizing Genomics Data</title>
+    <title></title>
     <meta charset="utf-8">
-    <meta name="author" content="Rockefeller University, Bioinformatics Resource Centre" />
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
-    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="metropolisCustom.css" type="text/css" />
+    <link rel="stylesheet" href="metropolis-fontsCustom.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
 # Visualizing Genomics Data
-### Rockefeller University, Bioinformatics Resource Centre
-### <a href="http://rockefelleruniversity.github.io/RU_VisualizingGenomicsData/" class="uri">http://rockefelleruniversity.github.io/RU_VisualizingGenomicsData/</a>
+<html>
+<div style="float:left">
+
+</div>
+<hr color='#EB811B' size=1px width=796px>
+</html>
+### <a href="http://rockefelleruniversity.github.io/RU_RNAseq/" class="uri">http://rockefelleruniversity.github.io/RU_RNAseq/</a>
 
 ---
 
@@ -673,7 +678,8 @@ bgrTrack &lt;- BiomartGeneRegionTrack(genome="hg19",
 ##Bringing in External data. Gene models through Biomart 
 
 We can then plot the BiomartGeneRegionTrack as we have previous GeneRegionTracks. 
- 
+
+
 
 ```r
 plotTracks(bgrTrack) 
@@ -755,220 +761,7 @@ We can then review available tracks using the **trackNames()** function.
 library(rtracklayer) 
 session &lt;- browserSession() 
 genome(session) &lt;- "hg19" 
-trackNames(session) 
-```
-
-```
-##               Base Position              Alt Haplotypes 
-##                     "ruler"              "altLocations" 
-##                    Assembly               BAC End Pairs 
-##                      "gold"               "bacEndPairs" 
-##                   BU ORChID             Chromosome Band 
-##          "wgEncodeBuOrchid"                  "cytoBand" 
-##               deCODE Recomb                ENCODE Pilot 
-##                "decodeRmap"             "encodeRegions" 
-##                 FISH Clones            Fosmid End Pairs 
-##                "fishClones"               "fosEndPairs" 
-##                         Gap                  GC Percent 
-##                       "gap"                   "gc5Base" 
-##                GRC Incident             GRC Map Contigs 
-##             "grcIncidentDb"                   "ctgPos2" 
-##           GRC Patch Release                   Hg18 Diff 
-##         "altSeqComposite10"            "hg19ContigDiff" 
-##                   Hg38 Diff                Hi Seq Depth 
-##            "hg38ContigDiff"                "hiSeqDepth" 
-##                       INSDC                 LRG Regions 
-##               "ucscToINSDC"                       "lrg" 
-##                 Map Contigs                 Mappability 
-##                    "ctgPos"        "wgEncodeMapability" 
-##                 Recomb Rate                  RefSeq Acc 
-##                "recombRate"              "ucscToRefSeq" 
-##               Restr Enzymes                 Short Match 
-##                   "cutters"                "oligoMatch" 
-##                 STS Markers                  Wiki Track 
-##                    "stsMap"                 "wikiTrack" 
-##                  UCSC Genes                 NCBI RefSeq 
-##                 "knownGene"           "refSeqComposite" 
-##               AceView Genes                    AUGUSTUS 
-##                   "acembly"              "augustusGene" 
-##                        CCDS                   CRISPR... 
-##                  "ccdsGene"                    "crispr" 
-##               Ensembl Genes                     EvoFold 
-##                   "ensGene"                   "evofold" 
-##                    Exoniphy                  GENCODE... 
-##                  "exoniphy"      "wgEncodeGencodeSuper" 
-##                Geneid Genes               Genscan Genes 
-##                    "geneid"                   "genscan" 
-##                   H-Inv 7.0           IKMC Genes Mapped 
-##           "hinv70Composite"                    "hgIkmc" 
-##                 lincRNAs...             LRG Transcripts 
-##                  "lincRNAs"          "lrgTranscriptAli" 
-##                   MGC Genes                      N-SCAN 
-##               "mgcFullMrna"                 "nscanGene" 
-##              Old UCSC Genes              ORFeome Clones 
-##             "knownGeneOld6"               "orfeomeMrna" 
-##                Other RefSeq           Pfam in UCSC Gene 
-##               "xenoRefGene"              "ucscGenePfam" 
-##            Retroposed Genes                   SGP Genes 
-##             "ucscRetroAli5"                   "sgpGene" 
-##                   SIB Genes                   sno/miRNA 
-##                   "sibGene"                     "wgRna" 
-##                 TransMap...                  tRNA Genes 
-##                "transMapV4"                     "tRNAs" 
-##             UCSC Alt Events                     UniProt 
-##                  "knownAlt"                   "uniprot" 
-##                  Vega Genes               Yale Pseudo60 
-##         "vegaGeneComposite"              "pseudoYale60" 
-##                Publications                ClinGen CNVs 
-##                      "pubs"             "iscaComposite" 
-##            ClinVar Variants                Coriell CNVs 
-##                   "clinvar"             "coriellDelDup" 
-##              COSMIC Regions               DECIPHER CNVs 
-##             "cosmicRegions"                  "decipher" 
-##           Development Delay                    GAD View 
-##               "cnvDevDelay"                       "gad" 
-##           Gene Interactions                 GeneReviews 
-##              "interactions"               "geneReviews" 
-##                GWAS Catalog               HGMD Variants 
-##               "gwasCatalog"                      "hgmd" 
-##                Lens Patents               LOVD Variants 
-##                    "patSeq"                      "lovd" 
-##               MGI Mouse QTL                OMIM Alleles 
-##              "jaxQtlMapped"                 "omimAvSnp" 
-##                  OMIM Genes             OMIM Pheno Loci 
-##                 "omimGene2"              "omimLocation" 
-##               RGD Human QTL                 RGD Rat QTL 
-##                    "rgdQtl"                 "rgdRatQtl" 
-##                     SNPedia            UniProt Variants 
-##                   "snpedia"                     "spMut" 
-##               Web Sequences                   CGAP SAGE 
-##              "pubsBingBlat"                  "cgapSage" 
-##                 Gene Bounds                       H-Inv 
-##                "rnaCluster"              "HInvGeneMrna" 
-##                  Human ESTs                 Human mRNAs 
-##                       "est"                      "mrna" 
-##           Human RNA Editing                  Other ESTs 
-##                    "darned"                   "xenoEst" 
-##                 Other mRNAs                     Poly(A) 
-##                  "xenoMrna"                     "polyA" 
-##                   PolyA-Seq            SIB Alt-Splicing 
-##             "polyASeqSites"                "sibTxGraph" 
-##                Spliced ESTs                     UniGene 
-##                 "intronEst"                 "uniGene_3" 
-##                   GTEx Gene             GTEx Transcript 
-##                  "gtexGene"            "gtexTranscExpr" 
-##             Affy Exon Array                  Affy GNF1H 
-##             "affyExonArray"                 "affyGnf1h" 
-##                Affy RNA Loc                    Affy U95 
-##       "wgEncodeAffyRnaChip"                   "affyU95" 
-##                   Affy U133              Affy U133Plus2 
-##                  "affyU133"             "affyU133Plus2" 
-##                 Allen Brain               Burge RNA-seq 
-##             "allenBrainAli" "burgeRnaSeqGemMapperAlign" 
-##          CSHL Small RNA-seq           ENC Exon Array... 
-##   "wgEncodeCshlShortRnaSeq"    "wgEncodeExonArraySuper" 
-##             ENC ProtGeno...              ENC RNA-seq... 
-##     "wgEncodeProtGenoSuper"       "wgEncodeRnaSeqSuper" 
-##                 GIS RNA PET                 GNF Atlas 2 
-##         "wgEncodeGisRnaPet"                 "gnfAtlas2" 
-##           GWIPS-viz Riboseq               Illumina WG-6 
-##           "gwipsvizRiboseq"            "illuminaProbes" 
-##                PeptideAtlas                qPCR Primers 
-##          "peptideAtlas2014"               "qPcrPrimers" 
-##              RIKEN CAGE Loc                Sestan Brain 
-##         "wgEncodeRikenCage"          "sestanBrainAtlas" 
-##        ENCODE Regulation...          GTEx Combined eQTL 
-##               "wgEncodeReg"           "gtexEqtlCluster" 
-##            GTEx Tissue eQTL                 CD34 DnaseI 
-##            "gtexEqtlTissue"                "eioJcviNAS" 
-##              CpG Islands...            ENC Chromatin... 
-##            "cpgIslandSuper"        "wgEncodeChromSuper" 
-##           ENC DNA Methyl...          ENC DNase/FAIRE... 
-##    "wgEncodeDnaMethylSuper"        "wgEncodeDNAseSuper" 
-##              ENC Histone...          ENC RNA Binding... 
-##      "wgEncodeHistoneSuper"          "wgEncodeRbpSuper" 
-##           ENC TF Binding...              FSU Repli-chip 
-##    "wgEncodeTfBindingSuper"      "wgEncodeFsuRepliChip" 
-##             Genome Segments           NKI Nuc Lamina... 
-##   "wgEncodeAwgSegmentation"              "laminB1Super" 
-##                    ORegAnno            Stanf Nucleosome 
-##                  "oreganno"         "wgEncodeSydhNsome" 
-##             SUNY SwitchGear              SwitchGear TSS 
-##    "wgEncodeSunySwitchgear"               "switchDbTss" 
-##              TFBS Conserved              TS miRNA sites 
-##             "tfbsConsSites"               "targetScanS" 
-##           UCSF Brain Methyl             UMMS Brain Hist 
-##           "ucsfBrainMethyl"         "uMassBrainHistone" 
-##                UW Repli-seq             Vista Enhancers 
-##        "wgEncodeUwRepliSeq"            "vistaEnhancers" 
-##                Conservation                 Cons 46-Way 
-##                "cons100way"                 "cons46way" 
-##            Cons Indels MmCf                     Evo Cpg 
-##      "consIndelsHgMmCanFam"                    "evoCpg" 
-##                        GERP              phastBias gBGC 
-##              "allHg19RS_BW"                 "phastBias" 
-##           Primate Chain/Net         Placental Chain/Net 
-##           "primateChainNet"         "placentalChainNet" 
-##        Vertebrate Chain/Net                 5% Lowest S 
-##        "vertebrateChainNet"                "ntSssTop5p" 
-##            H-C Coding Diffs           Neandertal Methyl 
-##      "ntHumChimpCodingDiff"     "neandertalMethylation" 
-##              Neandertal Seq                      S SNPs 
-##                "ntSeqReads"                 "ntSssSnps" 
-##            Sel Swp Scan (S)             Denisova Methyl 
-##          "ntSssZScorePMVar"       "denisovaMethylation" 
-##                Denisova Seq           Denisova Variants 
-##            "dhcBamDenisova"       "dhcVcfDenisovaPinky" 
-##            Mod Hum Variants              Modern Derived 
-##              "dhcVcfModern"           "dhcHumDerDenAnc" 
-##            Common SNPs(150)            Common SNPs(147) 
-##              "snp150Common"              "snp147Common" 
-##            Common SNPs(146)            Common SNPs(144) 
-##              "snp146Common"              "snp144Common" 
-##            Common SNPs(142)            Common SNPs(141) 
-##              "snp142Common"              "snp141Common" 
-##               All SNPs(150)               All SNPs(147) 
-##                    "snp150"                    "snp147" 
-##               All SNPs(146)               All SNPs(144) 
-##                    "snp146"                    "snp144" 
-##               All SNPs(142)               All SNPs(141) 
-##                    "snp142"                    "snp141" 
-##           Flagged SNPs(150)           Flagged SNPs(147) 
-##             "snp150Flagged"             "snp147Flagged" 
-##           Flagged SNPs(146)           Flagged SNPs(144) 
-##             "snp146Flagged"             "snp144Flagged" 
-##           Flagged SNPs(142)           Flagged SNPs(141) 
-##             "snp142Flagged"             "snp141Flagged" 
-##             Mult. SNPs(150)             Mult. SNPs(147) 
-##                "snp150Mult"                "snp147Mult" 
-##             Mult. SNPs(146)             Mult. SNPs(144) 
-##                "snp146Mult"                "snp144Mult" 
-##             Mult. SNPs(142)             Mult. SNPs(138) 
-##                "snp142Mult"                "snp138Mult" 
-##               All SNPs(138)            Common SNPs(138) 
-##                    "snp138"              "snp138Common" 
-##           Flagged SNPs(138)            1000G Ph1 Accsbl 
-##             "snp138Flagged"    "tgpPhase1Accessibility" 
-##              1000G Ph1 Vars            1000G Ph3 Accsbl 
-##                 "tgpPhase1"    "tgpPhase3Accessibility" 
-##              1000G Ph3 Vars              DGV Struct Var 
-##                 "tgpPhase3"                   "dgvPlus" 
-##                EVS Variants                        ExAC 
-##                "evsEsp6500"                      "exac" 
-##             Genome Variants                 GIS DNA PET 
-##                     "pgSnp"         "wgEncodeGisDnaPet" 
-##               HAIB Genotype                 HapMap SNPs 
-##      "wgEncodeHaibGenotype"                "hapmapSnps" 
-##            HGDP Allele Freq              SNP/CNV Arrays 
-##                   "hgdpGeo"            "genotypeArrays" 
-##                RepeatMasker            Interrupted Rpts 
-##                      "rmsk"             "nestedRepeats" 
-##              Microsatellite              NumtS Sequence 
-##                  "microsat"                   "numtSeq" 
-##              Segmental Dups                  Self Chain 
-##          "genomicSuperDups"                 "chainSelf" 
-##              Simple Repeats 
-##              "simpleRepeat"
+# trackNames(session) 
 ```
 
 ---

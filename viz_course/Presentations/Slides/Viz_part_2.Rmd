@@ -1,9 +1,9 @@
 ---
-title: "Visualizing Genomics Data"
-author: "Rockefeller University, Bioinformatics Resource Centre"
-date: "http://rockefelleruniversity.github.io/RU_VisualizingGenomicsData/"
+title: "Visualizing Genomics Data<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
+date: "http://rockefelleruniversity.github.io/RU_RNAseq/"
 output: 
   xaringan::moon_reader:
+    css: ["default", "metropolisCustom.css", "metropolis-fontsCustom.css"]
     lib_dir: libs
     nature:
       highlightStyle: github
@@ -599,8 +599,12 @@ bgrTrack <- BiomartGeneRegionTrack(genome="hg19",
 ##Bringing in External data. Gene models through Biomart 
 
 We can then plot the BiomartGeneRegionTrack as we have previous GeneRegionTracks. 
+```{r all, echo=F,fig.width=18,fig.height=5,cache=T} 
  
-```{r b, echo=T,fig.width=18,fig.height=5,cache=T,dependson="a"} 
+load("../../Data/ensembl_havana_encode.RData") 
+```
+
+```{r b, echo=T,fig.width=18,fig.height=5,cache=T,dependson="all"} 
 plotTracks(bgrTrack) 
 ``` 
 
@@ -672,11 +676,11 @@ We can use the **broswerSession()** function to connect to UCSC and the **genome
 
 We can then review available tracks using the **trackNames()** function.
  
-```{r a1, echo=T,fig.width=10,fig.height=5,cache=T} 
+```{r a1, echo=T,eval=TRUE,fig.width=10,fig.height=5,cache=T} 
 library(rtracklayer) 
 session <- browserSession() 
 genome(session) <- "hg19" 
-trackNames(session) 
+# trackNames(session) 
 ``` 
 
 ---
