@@ -150,7 +150,7 @@ With many high throughput sequencing experiments we are able to gain a genome wi
 ``` 
 
 ---
-## Vizualising high dimensional Biological data.
+## Vizualising Biological data.
 
 Common techniques used to visualise genomics data include dimension reduction and/or clustering followed by the graphical representation of data as a heatmap.
 
