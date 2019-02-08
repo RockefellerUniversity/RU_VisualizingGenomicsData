@@ -1,0 +1,267 @@
+---
+title: "Visualizing Genomics Data in Bioconductor exercises"
+author: "Rockefeller University, Bioinformatics Resource Centre"
+date: "https://rockefelleruniversity.github.io/Bioconductor_Introduction/"
+output: 
+  html_document:
+    number_sections: false  ## if you want number sections at each table header
+    theme: united  # many options for theme, this one is my favorite.
+    highlight: tango  # specifies the syntax highlighting style
+params:
+  toMessage: false    
+---
+
+```{r, setupA,include=FALSE}
+toMessage <- ifelse(!is.null(params$toMessage),params$toMessage,FALSE)
+message(toMessage)
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F,eval=T)
+library(Rsamtools)
+library(GenomicAlignments)
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+library(org.Mm.eg.db)
+
+if(!file.exists("ENCFF906UTB.bam")){
+  download.file("https://www.encodeproject.org/files/ENCFF906UTB/@@download/ENCFF906UTB.bam",destfile = "ENCFF906UTB.bam")
+}
+if(!file.exists("ENCFF726OCP.bam")){
+  download.file("https://www.encodeproject.org/files/ENCFF726OCP/@@download/ENCFF726OCP.bam",destfile = "ENCFF726OCP.bam")
+}
+```
+
+
+In this practical we will be reviewing some of methods in the GViz package to plot genomics data. In the belows sections we review axis creation, simple data plotting and visualization of annotation and gene models.
+
+In todays session we will continue to review the Myc ChIPseq we were working on in our last sessions.
+
+This include Myc ChIP-seq for MEL and Ch12 celllines.
+
+Information and files for the [Myc ChIPseq in MEL cell line can be found here](https://www.encodeproject.org/experiments/ENCSR000EUA/)
+
+Information and files for the [Myc ChIPseq in Ch12 cell line can be found here](https://www.encodeproject.org/experiments/ENCSR000ERN/)
+
+Preprocessed data for this practical session can be found in the **Data** directory.
+
+For later exercises we will be using data from Activated and naive T-regulatory cells from Christina Leslie's lab.
+
+Naive Treg cell data information can be found [here](https://www.encodeproject.org/experiments/ENCSR486LMB/) and the Bam file found [here](https://www.encodeproject.org/files/ENCFF906UTB/@@download/ENCFF906UTB.bam)
+
+Activated Treg cell data information can be found [here](https://www.encodeproject.org/experiments/ENCSR726DNP/) and the Bam file found [here](https://www.encodeproject.org/files/ENCFF726OCP/@@download/ENCFF726OCP.bam)
+
+
+
+# Axis and data tracks
+
+* Create a plot of an axis from 100kb to 1Mb
+```{r, echo=toMessage}
+suppressPackageStartupMessages(library(Gviz))
+
+library(Gviz)
+myAxisTrack <- GenomeAxisTrack()
+plotTracks(myAxisTrack,from=100000,to=1000000)
+```
+
+* Create a new axis showing a relative scale of 450kb
+
+```{r, echo=toMessage}
+plotTracks(myAxisTrack,from=100000,to=1000000,scale=450000)
+```
+
+* Replot axis from 100kb to 1Mb and indicate the 5 to 3 direction and add the addition minor tick marks.
+
+```{r, echo=toMessage}
+plotTracks(myAxisTrack,from=100000,to=1000000,
+           add53=T,
+           littleTicks=T)
+```
+
+*Load in the peak data and plot peaks for both samples over the region chr2:135,522,235-135,531,066
+
+```{r, warning=F, echo=toMessage}
+library(rtracklayer)
+myc_melPeaks <- import.bed("data/myc_mel.bed")
+mycmelpeaksDT <- DataTrack(myc_melPeaks,chromosome="chr2",
+                   from=135522235,
+                   to=135531066,
+                   name="Mel_peaks",
+                   type="b")
+myc_ch12Peaks <- import.bed("data/myc_ch12.bed")
+mycch12peaksDT <- DataTrack(myc_ch12Peaks,chromosome="chr2",
+                   from=135522235,
+                   to=135531066,
+                   name="ch12_peaks",
+                   type="b")
+plotTracks(c(mycmelpeaksDT,mycch12peaksDT),
+           chromosome="chr2",
+           from=135522235,
+           to=135531066,
+           type="b",pch=15,cex=2)
+```
+
+* Add coverage data to this plot from the **myc_mel.bw** and **myc_ch12.bw** files.
+
+```{r, echo=toMessage}
+library(rtracklayer)
+myc_melSignal <- import.bw("data/myc_mel.bw",as="GRanges")
+mycmelsigDT <- DataTrack(myc_melSignal,chromosome="chr2",
+                   from=135522235,
+                   to=135531066,
+                   name="Mel_Coverage",
+                   type=("hist"))
+myc_ch12Signal <- import.bw("data/myc_ch12.bw",as="GRanges")
+mycch12sigDT <- DataTrack(myc_ch12Signal,chromosome="chr2",
+                   from=135522235,
+                   to=135531066,
+                   name="CH12_Coverage",
+                   type=("hist"))
+plotTracks(c(mycmelsigDT,mycch12sigDT),
+           chromosome="chr2",
+           from=135522235,
+           to=135531066,
+           ylim=c(0,40),
+           type=("hist"))
+
+plotTracks(c(mycmelpeaksDT,mycmelsigDT,mycch12peaksDT,mycch12sigDT),
+           chromosome="chr2",
+           from=135522235,
+           to=135531066,
+           ylim=c(0,40),cex=2)
+```
+
+* Add a scale to show half the range.
+
+```{r, echo=toMessage}
+myAxisTrack <- GenomeAxisTrack()
+
+plotTracks(c(myAxisTrack,mycmelpeaksDT,mycmelsigDT,mycch12peaksDT,mycch12sigDT),
+           chromosome="chr2",
+           from=135522235,
+           to=135531066,
+           ylim=c(0,40),cex=1,scale=0.5)
+```
+
+
+# Annotation and GeneRegion tracks
+
+* Using an AnnotationTrack create the below plot.
+
+```{r,warning=F, echo=toMessage}
+
+suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(Gviz))
+
+library(GenomicRanges)
+library(Gviz)
+
+regions <- GRanges(seqnames=c("chr1"),IRanges(
+                   start=c(10,80,110),end=c(50,90,220)))
+names(regions) <- c("1","2","3")
+
+strand(regions) <- c("+","*","+")
+annoT <- AnnotationTrack(regions,
+                group = c("Ann1",
+                          "Ann2",
+                          "Ann1"))
+
+plotTracks(annoT,groupAnnotation="group")
+                
+
+```
+
+* Flatten the previous plot and change the colour
+
+```{r, echo=toMessage}
+
+plotTracks(annoT,groupAnnotation="group",stacking="dense",col="red",fill="red")
+                
+```
+
+* Load in the TxDB object for mm9 and create a plot of transcripts Igll1 and Vpreb1 and Topb3b. (at chr16:16,858,904-16,895,526)
+
+```{r,warning=F, echo=toMessage}
+suppressPackageStartupMessages(library(TxDb.Mmusculus.UCSC.mm9.knownGene))
+
+library(TxDb.Mmusculus.UCSC.mm9.knownGene)
+
+gtTrack <- GeneRegionTrack(TxDb.Mmusculus.UCSC.mm9.knownGene,
+                chromosome="chr16",
+                start=16858904,
+                end=16895526)
+plotTracks(gtTrack,transcriptAnnotation="name")
+                
+```
+
+
+* Recreate the plot with just the meta gene representation of transcripts shown.
+
+```{r, echo=toMessage}
+plotTracks(gtTrack,collapseTranscripts="meta",
+           transcriptAnnotation="name")
+```
+
+
+# Some real data.
+
+* Download the RNAseq data from Activated and Naive Bcells and extract the coverage around (+/- 2000bp of TSS and TTS) of Ccnd3 gene. Make a plot of coverage for both samples alongside its gene model.
+
+**You will need to run this command at beginning of script to avoid issues with chromosomes names. It will tell you this in warning**
+
+- **options(ucscChromosomeNames=FALSE)**
+
+
+```{r, cache=TRUE,message=FALSE,warning=FALSE, echo=toMessage}
+options(ucscChromosomeNames=FALSE)
+library(Rsamtools)
+library(GenomicAlignments)
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+library(org.Mm.eg.db)
+
+myGenes <- genes(TxDb.Mmusculus.UCSC.mm10.knownGene)
+ccdn3AsEntrez <- select(org.Mm.eg.db,keys="Ccnd3",columns = "ENTREZID",keytype = "SYMBOL")
+ccdn3Pos <- myGenes[myGenes$gene_id %in% ccdn3AsEntrez$ENTREZID]
+start(ccdn3Pos) <- start(ccdn3Pos)-1000
+end(ccdn3Pos) <- end(ccdn3Pos)+1000
+
+indexBam("ENCFF726OCP.bam")
+indexBam("ENCFF906UTB.bam")
+
+activatedReads <- readGAlignments("ENCFF726OCP.bam",param=ScanBamParam(which = ccdn3Pos))
+naiveReads <- readGAlignments("ENCFF906UTB.bam",param=ScanBamParam(which = ccdn3Pos))
+
+naiveCov <- coverage(naiveReads)
+actCov <- coverage(activatedReads)
+
+naiveCov <- GRanges(naiveCov)
+actCov <- GRanges(actCov)
+library(Gviz)
+naivePlot <- DataTrack(naiveCov,chromosome=as.vector(seqnames(ccdn3Pos)),
+                   from=start(ccdn3Pos),
+                   to=end(ccdn3Pos),
+                   name="naive",
+                   type=("hist"))
+actPlot <- DataTrack(actCov,chromosome=as.vector(seqnames(ccdn3Pos)),
+                   from=start(ccdn3Pos),
+                   to=end(ccdn3Pos),
+                   name="activated",
+                   type=("hist"))
+
+gtTrack <- GeneRegionTrack(TxDb.Mmusculus.UCSC.mm10.knownGene,
+                            chromosome=as.vector(seqnames(ccdn3Pos)),
+                            from=start(ccdn3Pos),
+                            to=end(ccdn3Pos))
+
+plotTracks(c(naivePlot,actPlot,gtTrack),
+           chromosome=as.vector(seqnames(ccdn3Pos)),
+           from=start(ccdn3Pos),
+           to=end(ccdn3Pos),
+           type=("hist"),
+           transcriptAnnotation="Name")
+
+
+
+
+```
+

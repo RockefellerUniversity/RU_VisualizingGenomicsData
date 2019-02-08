@@ -1,0 +1,20 @@
+Package: VizualizingGenomicsData
+Type: Package
+Title: Visualisation of Genomics Data
+Version: 0.1.0
+Author: BRC
+Maintainer: BRC <brc@rockefeller.edu>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: What license is it under?
+biocViews: Training
+Depends: Rsamtools, GenomicAlignments, TxDb.Mmusculus.UCSC.mm10.knownGene, org.Mm.eg.db, Gviz, rtracklayer, TxDb.Mmusculus.UCSC.mm9.knownGene, TxDb.Mmusculus.UCSC.mm10.knownGene, GenomicAlignments, DESeq2, tximport, org.Mm.eg.db, goseq, DEXSeq, limma, rtracklayer, IRanges , TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, BSgenome.Mmusculus.UCSC.mm10, biomaRt, BSgenome.Hsapiens.UCSC.hg19
+Encoding: UTF-8
+LazyData: true
+Suggests: knitr,
+    rmarkdown,
+    testthat,
+    yaml
+SystemRequirements: R, RStudio
+VignetteBuilder: knitr
+RoxygenNote: 6.0.1

@@ -1,0 +1,168 @@
+---
+title: "Visualizing Genomics Data in Bioconductor exercises"
+author: "Tom Carroll"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,eval=TRUE)
+# load("../../Data/gC_TissueFull.RData")
+# geneCounts <- geneCounts_Tissue
+# colData(geneCounts)$Tissue <- c("Heart", "Heart","Kidney","Kidney","Liver","Liver") 
+# geneCounts <- geneCounts[rowSums(assay(geneCounts)) > quantile(rowSums(assay(geneCounts)),0.4)]
+# save(geneCounts,file="../../viz_course/Data/tissueCounts.RData")
+```
+
+In this practical we will be reviewing some of methods for visualising and clustering data from RNAseq data.
+
+
+In todays session we will continue to review the Tissue RNAseq we were working on in our last sessions.
+
+- More information on liver data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CHB/)
+- More information on heart data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CGZ/)
+- More information on Kidney data [can be found here ](https://www.encodeproject.org/experiments/ENCSR000CGZ/)
+
+Preprocessed counts for Tissue data for this practical session can be found in the **Data** directory.
+**Data/tissueCounts.RData**
+
+- Load in the DESeq2 object for Tissues experiment,  produce a rlog transformation and plot the PCA for these genes.
+
+
+```{r a,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE}
+library(DESeq2)
+library(ggplot2)
+load("../Data/tissueCounts.RData")
+dds <- DESeqDataSet(geneCounts,design = ~Tissue)
+dds <- DESeq(dds)
+dds2 <- DESeq(dds,test="LRT",reduced = ~1)
+AllChanges <- results(dds2)
+rlogTissue <- rlog(dds)
+myPlot <- DESeq2::plotPCA(rlogTissue,intgroup = "Tissue")
+myPlot+theme_bw()
+```
+
+
+- Filter to genes significant (padj < 0..01) from our LRT test between all groups and produce a heatmap.
+
+```{r b,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE,dependson="a"}
+AllChanges <- results(dds2)
+rlogMatrix <- assay(rlogTissue)
+sigChanges <- rownames(AllChanges)[AllChanges$padj < 0.01 & !is.na(AllChanges$padj)]
+sigMat <- rlogMatrix[rownames(rlogMatrix) %in% sigChanges,]
+annoDF <- as.data.frame(colData(rlogTissue)[,1,drop=FALSE])
+library(pheatmap)
+pheatmap(sigMat,
+         scale="row",
+         show_rownames = FALSE,
+         annotation_col = annoDF)
+
+```
+
+
+- Extract the influence of genes to PC2 and produce a heatmap as above but now ranked by PC2 rotation/loadings.
+
+```{r c,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE,dependson="b"}
+pcRes <- prcomp(t(rlogMatrix))
+PC2_rnk <- sort(pcRes$rotation[,2],decreasing = TRUE)
+PC2_mat <- sigMat[match(names(PC2_rnk),rownames(sigMat),nomatch = 0),]
+pheatmap(PC2_mat,
+         scale="row",
+         cluster_rows=FALSE,
+         show_rownames = FALSE,annotation_col = annoDF
+         )
+
+```
+
+
+- Produce a PCA plot of the GO "heart development" genes. You can check [QuickGO webbsite to find its ID](https://www.ebi.ac.uk/QuickGO/.)
+```{r d,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE,dependson="c"}
+
+library(org.Mm.eg.db)
+HeartDevelopment <- select(org.Mm.eg.db,keytype = "GOALL",
+                              keys = "GO:0007507",columns = "ENTREZID")
+HeartDevelopment_Entrez <- unique(HeartDevelopment$ENTREZID)
+DESeq2::plotPCA(rlogTissue[rownames(rlogTissue) %in% HeartDevelopment_Entrez],intgroup = "Tissue")+theme_bw()
+```
+
+- Create a Heatmap of all genes and include row annotation showing members of heart development, liver development and kidney development GO set.
+
+```{r e,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE,dependson="d"}
+
+library(org.Mm.eg.db)
+HeartDevelopment <- select(org.Mm.eg.db,keytype = "GOALL",
+                              keys = "GO:0007507",columns = "ENTREZID")
+HeartDevelopment_Entrez <- unique(HeartDevelopment$ENTREZID)
+library(org.Mm.eg.db)
+LiverDevelopment <- select(org.Mm.eg.db,keytype = "GOALL",
+                              keys = "GO:0001889",columns = "ENTREZID")
+LiverDevelopment_Entrez <- unique(LiverDevelopment$ENTREZID)
+library(org.Mm.eg.db)
+KidneyDevelopment <- select(org.Mm.eg.db,keytype = "GOALL",
+                              keys = "GO:0001822",columns = "ENTREZID")
+KidneyDevelopment_Entrez <- unique(KidneyDevelopment$ENTREZID)
+annoRow <- data.frame(HeartDev=factor(rownames(sigMat) %in% HeartDevelopment_Entrez),
+           LiverDev=factor(rownames(sigMat) %in% LiverDevelopment_Entrez),
+           KidneyDev=factor(rownames(sigMat) %in% KidneyDevelopment_Entrez))
+rownames(annoRow) <- rownames(sigMat)
+
+ann_colors = list(
+    HeartDev = c("FALSE"="white","TRUE"="green"),
+    LiverDev = c("FALSE"="white","TRUE"="red"),
+    KidneyDev = c("FALSE"="white","TRUE"="blue")
+)
+
+pheatmap(sigMat,
+         scale="row",
+         show_rownames = FALSE,
+         annotation_col = annoDF,
+         annotation_row = annoRow,
+         annotation_colors = ann_colors)
+
+```
+
+
+- Import the replicated peaks for H3k27ac and H3K4me3 for Heart tissue samples found in Data directory. Identify genes with both H3k4me3 and H3k27ac peaks in their TSS (+/-500bp).
+
+- H3k4me3 = **Data//ENCFF599BFW.bed.gz**
+- H3k27ac = **Data//ENCFF733HUI.bed.gz**
+
+```{r f,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE,dependson="e"}
+library(rtracklayer)
+heart_H3k4me3 <- read.delim("../Data//ENCFF599BFW.bed.gz",sep="\t",header = FALSE)
+#heart_H3k4me3GR <- ChIPQC:::GetGRanges(heart_H3k4me3[heart_H3k4me3$V5>100,])
+heart_H3k4me3GR <- ChIPQC:::GetGRanges(heart_H3k4me3)
+heart_H3k27ac <- read.delim("../Data//ENCFF733HUI.bed.gz",sep="\t",header = FALSE)
+#heart_H3k27acGR <- ChIPQC:::GetGRanges(heart_H3k27ac[heart_H3k27ac$V5>100,])
+heart_H3k27acGR <- ChIPQC:::GetGRanges(heart_H3k27ac)
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+genePos <- genes(TxDb.Mmusculus.UCSC.mm10.knownGene)
+TSSPos <- promoters(genePos,500,500)
+ActiveGenes <- unique(TSSPos$gene_id[TSSPos %over% heart_H3k4me3GR 
+                         & TSSPos %over% heart_H3k27acGR])
+
+```
+
+
+- Create a heatmap of the top 100 marker (both positive and negative) for PC1 and add annotation for genes with H3k27ac and H3K4me3 peaks in their TSS.
+
+```{r g,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE,dependson="f"}
+library(pheatmap)
+annoRow <- data.frame(ActiveHeart=(rownames(sigMat) %in% ActiveGenes)+0,
+                      row.names = rownames(sigMat))
+
+
+PC1markers <- sort(pcRes$rotation[,1],decreasing = FALSE)[1:100]
+sigMats <- rlogMatrix[rownames(rlogMatrix) %in% names(PC1markers),]
+pheatmap(sigMats,
+         scale="row",annotation_row = annoRow,
+         show_rownames = FALSE)
+
+PC1markers <- sort(pcRes$rotation[,1],decreasing = TRUE)[1:100]
+sigMats <- rlogMatrix[rownames(rlogMatrix) %in% names(PC1markers),]
+pheatmap(sigMats,
+         scale="row",annotation_row = annoRow,
+         show_rownames = FALSE)
+
+```
+
+
