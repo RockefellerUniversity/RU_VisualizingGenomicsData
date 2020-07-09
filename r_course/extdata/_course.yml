@@ -1,0 +1,8 @@
+Description:
+  CourseName: Vizualizing Genomics Data
+  OverviewRmd: CourseOverview.Rmd
+Presentations:
+  titles: Session1 Session2
+  PresRmd: Viz_part_1.Rmd Viz_part_2.Rmd
+  PresOverviewRmd: Viz_session1.Rmd Viz_session2.Rmd
+  Exercises: biocIntro.Rmd fastaAndBiostrings.Rmd
