@@ -212,7 +212,7 @@ jobs:
 
       - name: Install package
         if: github.ref == 'refs/heads/master'
-        run: R CMD INSTALL ./BioconductorIntroduction/
+        run: R CMD INSTALL ./VizualizingGenomicsData/
 
       - name: Session info
         run: |
