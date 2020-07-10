@@ -1093,5 +1093,5 @@ Time for exercises! [Link here](../../exercises/exercises/Viz_part1_exercise.htm
 ##Solutions 
 
  
-Time for solutions! [Link here](../../exercises/exercises/Viz_part1_answers.html) 
+Time for solutions! [Link here](../../exercises/answers/Viz_part1_answers.html) 
  
