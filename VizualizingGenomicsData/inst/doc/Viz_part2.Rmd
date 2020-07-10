@@ -93,7 +93,7 @@ library(rtracklayer)
    plotTracks(c(mycmelReadsAT,mycch12ReadsAT,
                 mycmelpeaksDT,mycch12peaksDT,
                 gtTrack),
-              chromosome="16",
+              chromosome="chr16",
               from=16858904,
               to=16895526,
               type=c("coverage","b"))
