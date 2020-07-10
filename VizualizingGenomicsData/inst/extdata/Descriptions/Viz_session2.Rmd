@@ -1,10 +1,9 @@
 <br>
 
-#### **Introduction to Bioconductor**
+#### **Introduction to Gviz - part2**
 
-This section introduces the Bioconductor set of R packages.
+This section introduces the visualization of Genomics data in Bioconductor
 Session sections:
 
-* Bioconductor overview
-* Packages for Genomics data
-* Package installation
+* Plotting aligned reads from BAM
+* Visualization of external data from Biomart and UCSC
