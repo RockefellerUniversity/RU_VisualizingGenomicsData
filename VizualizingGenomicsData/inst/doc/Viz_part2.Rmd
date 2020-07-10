@@ -180,9 +180,15 @@ library(Gviz)
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 
 
+library(biomaRt)
+martList <- listMarts()
+mart = useMart("ENSEMBL_MART_ENSEMBL")
+dataList <- listDatasets(mart)
+mart = useMart("ENSEMBL_MART_ENSEMBL", dataset="mmusculus_gene_ensembl")
+
 bgrTrack <- BiomartGeneRegionTrack(genome="mm10",
                                    start=109672700,
-                                   end=109729043,
+                                   end=109729043,biomart = mart,
                                    chromosome = "2",
                                    name="ENSEMBL")
 
@@ -191,7 +197,7 @@ plotTracks(bgrTrack,chromosome="2",
 
 ```
 
-![](imgs/exercise1.png)
+![](imgs/exercise1_a.png)
 
 * Create a plot of the Ensembl annotations for Bdnf1 and plot alongside the splicing information for Bdnf1. (*We will need to fix seqlevels() and seqnames() for our BiomartGeneRegionTrack ranges*)
 
@@ -218,7 +224,7 @@ suppressPackageStartupMessages(library(rtracklayer))
 
 ```
 
-![](imgs/exercise2.png)
+![](imgs/exercise2_b.png)
 
 * Add in some information on know SNPs using the UCSC snp137Mult table.
 
