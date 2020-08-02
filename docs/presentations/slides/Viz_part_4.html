@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Viz_part_4.utf8</title>
+    <meta charset="utf-8" />
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link rel="stylesheet" href="metropolisCustom.css" type="text/css" />
+    <link rel="stylesheet" href="metropolis-fontsCustom.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Visualizing Genomics Data
+<html>
+<div style="float:left">
+
+</div>
+<hr color='#EB811B' size=1px width=796px>
+</html>
+### <a href="http://rockefelleruniversity.github.io/RU_RNAseq/" class="uri">http://rockefelleruniversity.github.io/RU_RNAseq/</a>
+
+---
+
+
+
+
+
+
+
+
+
+
+##The Course 
+
+
+ 
+* The Course.
+* Visualising high-throughput data.
+* Plotting ChIPseq data.
+* Plotting Motifs occurrence
+
+
+---
+##Reminder of file types 
+
+In this session we will be dealing with a range of data types. For more information on file types you can revisit our material. 
+ 
+* [File Formats](https://rockefelleruniversity.github.io/Genomic_Data/). 
+
+---
+##Reminder of data types in Bioconductor 
+
+We will also encounter and make use of many data structures and data types which we have seen throughout our courses on HTS data. You can revisit this material to refresh on HTS data analysis in Bioconductor and R below. 
+ 
+* [Bioconductor](https://rockefelleruniversity.github.io/Bioconductor_Introduction/). 
+* [Genomic Intervals](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/GenomicIntervals_In_Bioconductor.html)
+* [Genomic Scores](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/GenomicScores_In_Bioconductor.html)
+* [Sequences](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/SequencesInBioconductor.html)
+* [Gene Models](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/GenomicFeatures_In_Bioconductor.html)
+* [Alignments](https://rockefelleruniversity.github.io/Bioconductor_Introduction/r_course/presentations/slides/AlignedDataInBioconductor.html). 
+* [ChIP-seq](http://rockefelleruniversity.github.io/RU_ChIPseq/). 
+* [ATAC-seq](http://rockefelleruniversity.github.io/RU_ATACseq/). 
+* [RNA-seq](http://rockefelleruniversity.github.io/RU_RNAseq/). 
+ 
+ 
+ 
+---
+##Materials. 
+
+All material for this course can be found on github. 
+* [Visualising Genomics Data](https://github.com/RockefellerUniversity/RU_VisualizingGenomicsData) 
+ 
+Or can be downloaded as a zip archive from here.  
+* [Download zip](https://github.com/RockefellerUniversity/RU_VisualizingGenomicsData/archive/master.zip) 
+
+---
+##Materials. - Presentations, source code and practicals. 
+
+Once the zip file in unarchived. All presentations as HTML slides and pages, their R code and HTML practical sheets will be available in the directories underneath. 
+ 
+* **viz_course/presentations/Slides/** 
+Presentations as an HTML slide show. 
+* **viz_course/presentations/exercises/** 
+Some tasks/examples to work through.
+
+---
+##Materials. - Data for presentations, practicals. 
+
+ 
+ 
+All data to run code in the presentations and in the practicals is available in the zip archive. This includes coverage as bigWig files, aligned reads as BAM files and genomic intervals stored as BED files. 
+ 
+We also include some RData files containing precompiled results from querying database (in case of external server downtime).
+
+All data can be found under the **Data** directory 
+ 
+**Data/** 
+ 
+---
+##Set the Working directory 
+
+ 
+ 
+Before running any of the code in the practicals or slides we need to set the working directory to the folder we unarchived.  
+ 
+You may navigate to the unarchived VisualisingGenomicsData folder in the Rstudio menu 
+ 
+**Session -&gt; Set Working Directory -&gt; Choose Directory** 
+ 
+or in the console. 
+ 
+
+```r
+setwd("/PathToMyDownload/VisualizingGenomicsData/viz_course/presentations/Slides") 
+# e.g. setwd("~/Downloads/VisualizingGenomicsData/viz_course/presentations/Slides") 
+```
+ 
+---
+## Covered so far. (Vizualising genomic locations)
+
+Previously we have reviewed how we can review signal and annotation over individual sites using and genome browser such as IGV and or programmatically using Gviz.
+
+.pull-left[
+![](imgs/igvShot2.png)
+]
+
+.pull-right[
+![](imgs/il.png)
+]
+
+
+---
+## Vizualising high dimensional Biological data.
+
+With many high throughput sequencing experiments we are able to gain a genome wide view of our assays (in RNA-seq we measure every gene's expression, in ChIP-seq we identify all events for a user-defined transcription factor/mark, in ATAC-seq we evaluate all open/accessible regions in the genome.)
+ 
+![](imgs/igvUsles.png)
+
+ 
+
+
+---
+## Vizualising high dimensional Biological data.
+
+As with RNA-seq, epigenomics data can be displayed once reduced in dimension, such as with meta gene and profile plots, as well as with heatmaps.
+
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/large.png" alt="igv" height="400" width="800"&gt;
+&lt;/div&gt;
+
+---
+## Vizualising high dimensional Biological data.
+
+In this session will review a few approachs to visualising epigenetics data.
+
+There are many alternate packages for visualising epigenetic data in Bioconductor (soGGi,heatmaps and enrichmentmap packages) and in R (ngsPlot).
+
+Useful software outside R include Homer and Deeptools.
+
+---
+## CTCF ChIP-seq
+
+In our ChIPseq session, we identified differential occupancy of Myc transcription factor between Mel and Ch12 cellines. Here we will assess CTCF signal difference between Mel and Ch12.
+
+First lets read in some CTCF peaks into a GRangesList
+
+
+```r
+peakFiles &lt;- dir("data/CTCFpeaks/",pattern="*.peaks",
+                 full.names = TRUE)
+macsPeaks_GR &lt;- list()
+for(i in 1:length(peakFiles)){
+  macsPeaks_DF &lt;- read.delim(peakFiles[i],
+                                  comment.char="#")
+     macsPeaks_GR[[i]] &lt;- GRanges(
+     seqnames=macsPeaks_DF[,"chr"],
+     IRanges(macsPeaks_DF[,"start"],
+             macsPeaks_DF[,"end"]
+     )
+  )
+}
+macsPeaks_GRL &lt;- GRangesList(macsPeaks_GR)
+names(macsPeaks_GRL) &lt;- c("Ch12_1","Ch12_2","Mel_1","Mel_2")
+```
+
+---
+## CTCF ChIP-seq
+
+Now we can produce our non-redundant set of peaks and score each of the peaks by their occurrence in our Mel and Ch12 samples.
+
+
+```r
+allPeaksSet_nR &lt;- reduce(unlist(macsPeaks_GRL))
+overlap &lt;- list()
+for(i in 1:length(macsPeaks_GRL)){
+  overlap[[i]] &lt;- allPeaksSet_nR %over% macsPeaks_GRL[[i]]
+}
+overlapMatrix &lt;- do.call(cbind,overlap)
+colnames(overlapMatrix) &lt;- names(macsPeaks_GRL)
+mcols(allPeaksSet_nR) &lt;- overlapMatrix
+allPeaksSet_nR[1,]
+```
+
+```
+## GRanges object with 1 range and 4 metadata columns:
+##       seqnames          ranges strand |    Ch12_1    Ch12_2     Mel_1     Mel_2
+##          &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; | &lt;logical&gt; &lt;logical&gt; &lt;logical&gt; &lt;logical&gt;
+##   [1]     chr1 3012656-3012773      * |      TRUE      TRUE     FALSE     FALSE
+##   -------
+##   seqinfo: 21 sequences from an unspecified genome; no seqlengths
+```
+---
+## CTCF ChIP-seq
+
+With the overlap matrix we can define our set of high-confidence peaks
+
+
+```r
+HC_Peaks &lt;- allPeaksSet_nR[
+  rowSums(as.data.frame(
+    mcols(allPeaksSet_nR)[,c("Ch12_1","Ch12_2")])) &gt;= 2 |
+  rowSums(as.data.frame(
+    mcols(allPeaksSet_nR)[,c("Mel_1","Mel_2")])) &gt;= 2  
+  ]
+HC_Peaks[1:2,]
+```
+
+```
+## GRanges object with 2 ranges and 4 metadata columns:
+##       seqnames          ranges strand |    Ch12_1    Ch12_2     Mel_1     Mel_2
+##          &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; | &lt;logical&gt; &lt;logical&gt; &lt;logical&gt; &lt;logical&gt;
+##   [1]     chr1 3012656-3012773      * |      TRUE      TRUE     FALSE     FALSE
+##   [2]     chr1 3448274-3448415      * |     FALSE     FALSE      TRUE      TRUE
+##   -------
+##   seqinfo: 21 sequences from an unspecified genome; no seqlengths
+```
+
+
+---
+# Defining a consensus, non-redundant set.
+
+We can count the number of reads overlapping our peaks using the **summarizeOverlaps** function and a BamFileList of our BAMs to count.
+
+
+```r
+library(Rsamtools)
+library(GenomicAlignments)
+
+bams &lt;- c("~/Projects/Results/chipseq/testRun/BAMs/Sorted_CTCF_Ch12_1.bam",
+          "~/Projects/Results/chipseq/testRun/BAMs/Sorted_CTCF_Ch12_2.bam",
+          "~/Projects/Results/chipseq/testRun/BAMs/Sorted_CTCF_Mel_1.bam",
+          "~/Projects/Results/chipseq/testRun/BAMs/Sorted_CTCF_Mel_2.bam")
+bamFL &lt;- BamFileList(bams,yieldSize = 5000000)
+myCTCFCounts &lt;- summarizeOverlaps(HC_Peaks,
+                              reads = bamFL,
+                              ignore.strand = TRUE)
+colData(myCTCFCounts)$Group &lt;- c("Ch12","Ch12","Mel","Mel")
+```
+
+---
+# Defining a consensus, non-redundant set.
+
+Now we can use the DESeq2 package to compare our 2 cell-lines.
+
+
+```r
+library(DESeq2)
+deseqCTCF &lt;- DESeqDataSet(myCTCFCounts,design = ~ Group)
+deseqCTCF &lt;- DESeq(deseqCTCF)
+CTCF_Ch12MinusMel &lt;- results(deseqCTCF,
+                        contrast = c("CellLine","Mel","Ch12"),
+                        format="GRanges")
+```
+
+---
+# Defining a consensus, non-redundant set.
+
+As well as to give us some normalised,transformed  data for visualisation using **rlog**.
+
+
+```r
+CTCFrlog &lt;- rlog(deseqCTCF)
+CTCFrlog
+```
+
+
+
+
+---
+# Defining a consensus, non-redundant set.
+
+With our newly created rlog transformed CTCF signal data we can create similar visualisation as we have for RNA-seq.
+
+First we can create our measures of sample distances.
+
+
+```r
+sampleDists &lt;- as.dist(1-cor(assay(CTCFrlog)))
+sampleDistMatrix &lt;- as.matrix(sampleDists)
+```
+
+
+---
+# Defining a consensus, non-redundant set.
+
+With our newly created rlog transformed CTCF signal data we can create similar visualisation as we have for RNA-seq.
+
+First we can create our measures of sample distances.
+
+
+```r
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows = sampleDists,
+         clustering_distance_cols = sampleDists)
+```
+
+![](Viz_part_4_files/figure-html/p1b-1.png)&lt;!-- --&gt;
+
+---
+# Defining a consensus, non-redundant set.
+
+We can also review our dimension reduction by PCA to assess differences within and between groups with the **plotPCA**.
+
+Here we use by default the top 500 most variable sites.
+
+
+```r
+plotPCA(CTCFrlog,intgroup="Group")
+```
+
+![](Viz_part_4_files/figure-html/p2-1.png)&lt;!-- --&gt;
+
+---
+# Defining a consensus, non-redundant set.
+
+We can rerun using all sites to see some additional variance in PC2.
+
+
+```r
+plotPCA(CTCFrlog,intgroup="Group",
+                  ntop=nrow(CTCFrlog))
+```
+
+![](Viz_part_4_files/figure-html/p3-1.png)&lt;!-- --&gt;
+
+---
+# Defining a consensus, non-redundant set.
+
+The plotPCA can return a data.frame of the PC scores for samples used in plot.
+
+
+```r
+myData &lt;- plotPCA(CTCFrlog,intgroup="Group",
+                  ntop=nrow(CTCFrlog),
+                  returnData=TRUE)
+myData
+```
+
+```
+##                   PC1       PC2     group     Group        name
+## CTCF_Ch12_1 -95.59844  17.12250 CTCF_Ch12 CTCF_Ch12 CTCF_Ch12_1
+## CTCF_Ch12_2 -91.08241 -17.63094 CTCF_Ch12 CTCF_Ch12 CTCF_Ch12_2
+## CTCF_MEL_1   94.06208 -11.13739  CTCF_Mel  CTCF_Mel  CTCF_MEL_1
+## CTCF_MEL_2   92.61876  11.64583  CTCF_Mel  CTCF_Mel  CTCF_MEL_2
+```
+
+---
+# Defining a consensus, non-redundant set.
+
+So we can use this data.frame and any additional information to produce a customised version of this plot.
+
+Here we add fragment length information.
+
+
+```r
+myData$FragmentLength &lt;- c(129,136,133,125)
+library(ggplot2)
+ggplot(myData,aes(x=PC1,y=PC2,
+                  colour=Group,size=FragmentLength))+
+  geom_point()+
+  scale_size_continuous(range=c(2,10))
+```
+
+![](Viz_part_4_files/figure-html/p3b-1.png)&lt;!-- --&gt;
+
+---
+# Defining a consensus, non-redundant set.
+
+We can extract information on the influence of sites to the separation of samples along PC1 as we have with RNA-seq.
+
+
+```r
+pcRes &lt;- prcomp(t(assay(CTCFrlog)))
+RankedPC1 &lt;- rownames(pcRes$rotation)[order(pcRes$rotation[,1],
+                                            decreasing=T)]
+RankedPC1[1:3]
+```
+
+```
+## [1] "ID_chr4_89129278_89129824"   "ID_chr4_89145405_89145765"  
+## [3] "ID_chrX_159987900_159988285"
+```
+
+---
+# Defining a consensus, non-redundant set.
+
+We can see from the IGV that these top sites are Mel cell-line specific CTCF peaks.
+
+![](imgs/CTCF_fromPCA.png)
+
+
+---
+# Defining a consensus, non-redundant set.
+
+We can also plot our significantly differential sites as defined by our DESeq2 test in a gene by sample heatmaps
+
+
+```r
+library(pheatmap)
+rlogMat &lt;- assay(CTCFrlog)
+Diff &lt;-  names(CTCF_Ch12MinusMel)[CTCF_Ch12MinusMel$padj &lt; 0.05 &amp; 
+                                      !is.na(CTCF_Ch12MinusMel$padj) &amp;
+                                    abs(CTCF_Ch12MinusMel$log2FoldChange) &gt; 3]
+
+sigMat &lt;- rlogMat[rownames(rlogMat) %in% Diff,]
+pheatmap(sigMat,scale="row",show_rownames = FALSE)
+```
+
+![](Viz_part_4_files/figure-html/p5-1.png)&lt;!-- --&gt;
+
+---
+# soGGi
+
+The soGGi package contains a set of tools to profile high-throughput signalling data and motif occurrence over a set of genomic locations.
+
+We have used this earlier to produce some plots of our ATAC-seq signal split by fragment length over TSS regions and our cut-site footprints around CTCF motifs.
+
+.pull-left[
+![](imgs/cuts.png)
+]
+.pull-right[
+![](imgs/nucProfile.png)
+]
+---
+# soGGi
+
+We will use the development version of soGGi package [available from Github](https://github.com/ThomasCarroll/soGGi) to take advantage of the latest features.
+
+
+```r
+#library(devtools)
+#install_github("ThomasCarroll/soGGi")
+library(soGGi)
+```
+
+---
+# soGGi
+
+Before we start plotting over regions we can update our DEseq2 results GRanges with some more information on DB sites.
+
+
+```r
+UpInMel &lt;-  names(CTCF_Ch12MinusMel)[CTCF_Ch12MinusMel$padj &lt; 0.05 &amp; 
+                                      !is.na(CTCF_Ch12MinusMel$padj) &amp;
+                                    CTCF_Ch12MinusMel$log2FoldChange &lt; -3]
+
+DownInMel &lt;-  names(CTCF_Ch12MinusMel)[CTCF_Ch12MinusMel$padj &lt; 0.05 &amp; 
+                                      !is.na(CTCF_Ch12MinusMel$padj) &amp;
+                                    abs(CTCF_Ch12MinusMel$log2FoldChange) &gt; 3]
+
+SigVec  &lt;- ifelse(names(CTCF_Ch12MinusMel) %in% UpInMel,"UpInMel",
+             ifelse(names(CTCF_Ch12MinusMel) %in% DownInMel,"DownInMel",
+                    "Other"))
+CTCF_Ch12MinusMel$Sig &lt;- SigVec
+CTCF_Ch12MinusMel$name &lt;- names(CTCF_Ch12MinusMel)
+```
+
+---
+# soGGi
+
+We also add some information on CTCF site signal strength.
+
+
+```r
+grPs &lt;- quantile(CTCF_Ch12MinusMel$baseMean,c(0.33,0.66))
+high &lt;-  names(CTCF_Ch12MinusMel)[CTCF_Ch12MinusMel$baseMean &gt; grPs[2]]
+low &lt;-  names(CTCF_Ch12MinusMel)[CTCF_Ch12MinusMel$baseMean &lt; grPs[2]]
+
+Strength  &lt;- ifelse(names(CTCF_Ch12MinusMel) %in% high,"high",
+             ifelse(names(CTCF_Ch12MinusMel) %in% low,"low",
+                    "")
+             )
+CTCF_Ch12MinusMel$Strength &lt;- Strength
+```
+
+---
+# soGGi
+
+Now we have our updated GRanges of DEseq2 results with our custom annotation.
+
+
+```r
+CTCF_Ch12MinusMel[1:2,]
+```
+
+```
+## GRanges object with 2 ranges and 9 metadata columns:
+##                              seqnames            ranges strand |  baseMean
+##                                 &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt;
+##   ID_chr16_11670061_11670805    chr16 11670061-11670805      * |   3608.19
+##    ID_chr1_75559493_75559979     chr1 75559493-75559979      * |   1400.68
+##                              log2FoldChange     lfcSE      stat       pvalue
+##                                   &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;    &lt;numeric&gt;
+##   ID_chr16_11670061_11670805        3.73522  0.121393   30.7696 6.69175e-208
+##    ID_chr1_75559493_75559979        4.23851  0.139268   30.4341 1.94252e-203
+##                                      padj         Sig
+##                                 &lt;numeric&gt; &lt;character&gt;
+##   ID_chr16_11670061_11670805 4.12473e-203   DownInMel
+##    ID_chr1_75559493_75559979 5.98675e-199   DownInMel
+##                                                    name    Strength
+##                                             &lt;character&gt; &lt;character&gt;
+##   ID_chr16_11670061_11670805 ID_chr16_11670061_11670805        high
+##    ID_chr1_75559493_75559979  ID_chr1_75559493_75559979        high
+##   -------
+##   seqinfo: 21 sequences from an unspecified genome; no seqlengths
+```
+
+---
+# soGGi
+
+We can use the **regionPlot()** function with our normalised bigWig of CTCF signal by setting **format** parameter to **bigwig**. Additionally we set the plot area width with the **distanceAround** parameter.
+
+
+```r
+rownames(CTCF_Ch12MinusMel) &lt;- NULL
+
+CTCFbigWig &lt;- "data/Sorted_CTCF_Ch12_1Normalised.bw"
+CTCF_ch12 &lt;- regionPlot(CTCFbigWig,
+                        testRanges = CTCF_Ch12MinusMel,
+                        style = "point",
+                        format = "bigwig",
+                        distanceAround = 750)
+```
+
+
+
+---
+# soGGi
+
+We can produce a simple profile plot by using the **plotRegion()** function with our **ChIPprofile** object.
+
+
+```r
+p &lt;- plotRegion(CTCF_ch12)
+p
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P8.png" alt="igv" height="350" width="600"&gt;
+&lt;/div&gt;
+---
+# soGGi
+
+As with our other packages, **soGGi** returns a **ggplot** object which can be further customised.
+
+
+```r
+p+theme_bw()+
+  geom_point(colour="red")
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P9.png" alt="igv" height="350" width="600"&gt;
+&lt;/div&gt;
+
+---
+# soGGi
+
+We can use the **summariseBy** argument to group our data for plotting by column information. Here by specify to group data by values in the **Strength** column.
+
+
+```r
+plotRegion(CTCF_ch12,
+           summariseBy = "Strength")
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P10.png" alt="igv" height="350" width="600"&gt;
+&lt;/div&gt;
+
+---
+# soGGi
+
+Additional we can supply groups to the **gts** argument as a list of sets of IDS/names to create groups from. 
+
+By default the names are matched against the rownames of our **ChIPprofile** object.
+
+
+```r
+rownames(CTCF_ch12) &lt;- mcols(CTCF_ch12)$name
+plotRegion(CTCF_ch12,
+           gts=list(high=high,low=low))
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P11.png" alt="igv" height="300" width="600"&gt;
+&lt;/div&gt;
+
+---
+# soGGi
+
+When using the **gts** argument, we can supply the name of column to check group IDs/names against for grouping our plot to the **summariseBy** argument.
+
+
+```r
+plotRegion(CTCF_ch12,
+           gts=list(high=high,low=low),
+           summariseBy = "name")
+```
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/P12.png" alt="igv" height="350" width="600"&gt;
+&lt;/div&gt;
+
+---
+# soGGi
+
+We can also use lists of GRanges to group our data in soGGi. 
+
+First we can create some TSS and TTS regions to investigate.
+
+
+```r
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+dsds &lt;- genes(TxDb.Mmusculus.UCSC.mm10.knownGene)
+TSS &lt;- resize(dsds,500,fix = "start")
+TTS &lt;- resize(dsds,500,fix = "end")
+```
+
+
+---
+# soGGi
+
+We can then supply this list of GRanges to the **gts** parameter as we have our lists of IDs/names. Groups are defined by regions overlapping the specified ranges.
+
+
+```r
+plotRegion(CTCF_ch12,
+           gts=list(TSS=TSS,
+                    TTS=TTS))
+```
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/P17.png" alt="igv" height="350" width="600"&gt;
+&lt;/div&gt;
+
+---
+# soGGi
+
+We can control colouring with the **colourBy** argument. Here we specify **Group** to colour by our newly defined groups.
+
+
+```r
+plotRegion(CTCF_ch12,
+           summariseBy = "Strength",
+           colourBy = "Group")
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P13.png" alt="igv" height="350" width="600"&gt;
+&lt;/div&gt;
+
+---
+# soGGi
+
+We can control faceting  with the **groupBy** argument.
+
+
+```r
+plotRegion(CTCF_ch12,
+           summariseBy = "Strength",
+           colourBy = "Group",
+           groupBy = "Group")
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P14.png" alt="igv" height="350" width="600"&gt;
+&lt;/div&gt;
+
+---
+# soGGi
+
+Again we can use ggplot basics to add some of our own colour schemes to our plots.
+
+
+```r
+p &lt;- plotRegion(CTCF_ch12,
+                 summariseBy = "Strength",
+                 colourBy = "Group",
+                 groupBy = "Group")
+cols &lt;- c("high" = "darkred", "low" = "darkblue")
+p + scale_colour_manual(values = cols)+
+  theme_minimal()
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P15.png" alt="igv" height="200" width="400"&gt;
+&lt;/div&gt;
+
+---
+# soGGi
+
+We can use to soGGi to compare signal across samples. 
+
+Here we load in some data now for CTCF signal in our Mel cell-line.
+
+
+```r
+CTCFbigWig &lt;- "data//Sorted_CTCF_MEL_1Normalised.bw"
+CTCF_mel &lt;- regionPlot(CTCFbigWig,
+                        testRanges = CTCF_Ch12MinusMel,
+                        style = "point",
+                        format = "bigwig",
+                        distanceAround = 750)
+```
+
+
+
+
+---
+# soGGi
+
+We can combine **ChIPprofile** objects just as with vectors and lists using the **c()** function.
+
+
+```r
+CTCF &lt;- c(CTCF_mel,CTCF_ch12)
+CTCF
+```
+
+```
+## class: ChIPprofile 
+## dim: 61639 1501 
+## metadata(2): names AlignedReadsInBam
+## assays(2): '' ''
+## rownames(61639): giID2175 giID2176 ... giID59822 giID59823
+## rowData names(10): baseMean log2FoldChange ... Strength giID
+## colnames(1501): Point_Centre-750 Point_Centre-749 ... Point_Centre749
+##   Point_Centre750
+## colData names(0):
+```
+
+---
+# soGGi
+
+We can now plot our CTCF samples together in the same plot. We can control the plot by setting the **colourBy** argument to **Sample**.
+
+
+```r
+plotRegion(CTCF,
+           colourBy = "Sample")
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P20.png" alt="igv" height="350" width="600"&gt;
+&lt;/div&gt;
+
+---
+# soGGi
+
+We could also use the sample to facet our plot. Here we set **groupBy** to **Sample**.
+
+
+```r
+plotRegion(CTCF,
+           groupBy = "Sample")
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P21.png" alt="igv" height="350" width="600"&gt;
+&lt;/div&gt;
+---
+# soGGi
+
+And we combine Sample and Grouping to produce some more complex plots. Here we group our data by the **Sig** column.
+
+
+```r
+plotRegion(CTCF,
+           summariseBy = "Sig",
+           groupBy = "Group",
+           colourBy="Sample")
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P22.png" alt="igv" height="350" width="600"&gt;
+&lt;/div&gt;
+---
+# soGGi
+
+We have previously used **soGGi** to produce our plots of footprints across motifs. Now we will use motif occurrence as the signal to plot instead of regions to plot over. 
+
+First we extract the CTCF motif and plot the seqLogo.
+
+```r
+library(MotifDb)
+library(Biostrings)
+library(seqLogo)
+library(BSgenome.Mmusculus.UCSC.mm10)
+
+CTCFm &lt;- query(MotifDb, c("CTCF"))
+ctcfMotif &lt;- CTCFm[[1]]
+seqLogo(ctcfMotif)
+```
+
+![](Viz_part_4_files/figure-html/p23-1.png)&lt;!-- --&gt;
+
+---
+# soGGi
+
+We can use the **Biostrings** **matchPWM()** function to scan the genome for CTCF motifs, convert sites to a GRanges and this to an **rleList** using the coverage function.
+
+
+```r
+myRes &lt;- matchPWM(ctcfMotif,
+                  BSgenome.Mmusculus.UCSC.mm10[["chr19"]])
+CTCFmotifs &lt;- GRanges("chr19",ranges(myRes))
+CTCFrle &lt;- coverage(CTCFmotifs)
+CTCFrle[[1]]
+```
+
+```
+## integer-Rle of length 61322860 with 5646 runs
+##   Lengths: 3055542      19   24798      19 ...    8069      19   13447      19
+##   Values :       0       1       0       1 ...       0       1       0       1
+```
+
+---
+# soGGi
+
+We can now plot our profile of motif occurrence across CTCF sites using the **regionPlot()** function and setting format parameter to **rlelist**.
+
+
+```r
+motifPlot &lt;- regionPlot(CTCFrle,
+               CTCF_Ch12MinusMel,
+               format = "rlelist")
+plotRegion(motifPlot)
+```
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/P25.png" alt="igv" height="350" width="600"&gt;
+&lt;/div&gt;
+---
+# soGGi
+
+We can combine our ChIP profiles from CTCF signal in Mel and Motif occurrence and plot side by side.
+
+
+```r
+CTCFSig19 &lt;- CTCF_mel[seqnames(CTCF_mel) %in% "chr19",]
+rownames(motifPlot) &lt;- rownames(CTCFSig19) &lt;- NULL
+CTCFall &lt;- c(motifPlot,CTCFSig19)
+p &lt;- plotRegion(CTCFall)
+p
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P26.png" alt="igv" height="300" width="600"&gt;
+&lt;/div&gt;
+---
+# soGGi
+
+Since these two objects represent different data types, they will be in different scales. 
+
+We can set the scales to resize within our facets by setting **freeScale** parameter to TRUE.
+
+
+```r
+p &lt;- plotRegion(CTCFall,freeScale=TRUE)
+p
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P27.png" alt="igv" height="300" width="600"&gt;
+&lt;/div&gt;
+---
+# soGGi
+
+In some instances we will want to plot over regions of unequal lengths, such as genes.
+
+```r
+dsds &lt;- genes(TxDb.Mmusculus.UCSC.mm10.knownGene)
+```
+
+```
+##   66 genes were dropped because they have exons located on both strands
+##   of the same reference sequence or on more than one reference sequence,
+##   so cannot be represented by a single genomic range.
+##   Use 'single.strand.genes.only=FALSE' to get all the genes in a
+##   GRangesList object, or use suppressMessages() to suppress this message.
+```
+
+```r
+names(dsds) &lt;- NULL
+dsds
+```
+
+```
+## GRanges object with 24528 ranges and 1 metadata column:
+##           seqnames              ranges strand |     gene_id
+##              &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; | &lt;character&gt;
+##       [1]     chr9   21062393-21073096      - |   100009600
+##       [2]     chr7   84935565-84964115      - |   100009609
+##       [3]    chr10   77711457-77712009      + |   100009614
+##       [4]    chr11   45808087-45841171      + |   100009664
+##       [5]     chr4 144157557-144162663      - |      100012
+##       ...      ...                 ...    ... .         ...
+##   [24524]     chr3   84496093-85887516      - |       99889
+##   [24525]     chr3 110246109-110250998      - |       99890
+##   [24526]     chr3 151730922-151749960      - |       99899
+##   [24527]     chr3   65528410-65555518      + |       99929
+##   [24528]     chr4 136550540-136602723      - |       99982
+##   -------
+##   seqinfo: 66 sequences (1 circular) from mm10 genome
+```
+
+---
+# soGGi
+
+To produce average plots over genes we must rescale genes to be the same size.This is performed by splitting genes into equal number of bins, with bin size variable across genes and plotting as percent of regions.
+
+We can produce these plots in soGGi by setting **style** to **percentOfRegion**. 
+
+
+```r
+pol2Ser2 &lt;- regionPlot(bamFile = "~/Downloads/ENCFF239XXP.bigWig",
+                    testRanges = dsds,style = "percentOfRegion",
+                    format = "bigwig")
+```
+
+
+
+---
+# soGGi
+
+Now we can plot the distribution of Polymerase 2 serine 2 across genes with **plotRegion()** function.
+
+
+```r
+plotRegion(pol2Ser2)
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P30.png" alt="igv" height="350" width="600"&gt;
+&lt;/div&gt;
+---
+# soGGi
+
+We can now include the CTCF signal to review distibution of CTCF in genes compared to Pol2s2 signal.
+
+
+```r
+CTCF_gene &lt;- regionPlot(CTCFbigWig,
+                    testRanges = dsds,
+                    style = "percentOfRegion",
+                    format = "bigwig")
+```
+
+
+
+---
+# soGGi
+
+We can now plot the signal of CTCF and Pol2serine2 side by side.
+
+
+
+
+```r
+rownames(CTCF_gene) &lt;- rownames(pol2Ser2) &lt;- NULL
+
+plotRegion(c(CTCF_gene,pol2Ser2),
+           colourBy = "Sample",
+           freeScale = TRUE,
+           groupBy="Sample")
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P33.png" alt="igv" height="300" width="600"&gt;
+&lt;/div&gt;
+
+---
+# soGGi
+
+We may also want to review our CTCF profile data as heatmap of signal across our sites.
+
+We can produce heatmaps in soGGi using the **plotHeatmap** function. First we can extract a subset of sites to plot, here our sites which are higher in Mel.
+
+Since ChIPprofile objects act like GRanges we can subset by our metadata columns using mcols() function.
+
+
+
+```r
+CTCF_Mel_Up &lt;- CTCF[mcols(CTCF)$name %in% UpInMel,]
+```
+
+
+---
+# soGGi
+
+We can pass individual ChIPprofile objects to the plotHeatmap function to produce our heatmaps of CTCF signal in Mel sample. Here we set maxValue to make Heatmaps comparable across samples.
+
+
+```r
+k1 &lt;- plotHeatmap(CTCF_Mel_Up[[1]],
+                  col = colorRampPalette(blues9)(100),
+                  maxValue=15)
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/P35.png" alt="igv" height="300" width="500"&gt;
+&lt;/div&gt;
+---
+# soGGi
+
+And we can produce the heatmap for our other sample in the same way.
+
+
+```r
+k2 &lt;- plotHeatmap(CTCF_Mel_Up[[2]],
+                  col = colorRampPalette(blues9)(100),
+                  maxValue=15)
+```
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/P36.png" alt="igv" height="300" width="500"&gt;
+&lt;/div&gt;
+
+
+---
+##Exercises 
+
+ 
+Time for exercises! [Link here](../../Exercises/Viz_part4_exercises.html) 
+ 
+---
+##Solutions 
+
+ 
+Time for solutions! [Link here](../../Answers/Viz_part4_answers.html)
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

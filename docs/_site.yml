@@ -22,6 +22,14 @@ navbar:
         href: presentations/singlepage/Viz_part_2.html
       - text: Code
         href: presentations/r_code/Viz_part_2.R
+    - text: Session3
+      menu:
+      - text: Slide
+        href: presentations/slides/Viz_part_3.html
+      - text: Single Page
+        href: presentations/singlepage/Viz_part_3.html
+      - text: Code
+        href: presentations/r_code/Viz_part_3.R
   - text: Exercises
     menu:
     - text: Viz_part1
