@@ -127,11 +127,11 @@ setwd("/PathToMyDownload/VisualizingGenomicsData/viz_course/presentations/Slides
 Previously we have reviewed how we can review signal and annotation over individual sites using and genome browser such as IGV and or programmatically using Gviz.
 
 .pull-left[
-![](../../imgs/IGV_SplicingExample.png)
+![](imgs/IGV_SplicingExample.png)
 ]
 
 .pull-right[
-![](../../imgs/cc-1.png)
+![](imgs/cc-1.png)
 ]
 
 
@@ -140,7 +140,7 @@ Previously we have reviewed how we can review signal and annotation over individ
 
 With many high throughput sequencing experiments we are able to gain a genome wide view of our assays (in RNA-seq we measure every gene's expression, in ChIP-seq we identify all events for a user-defined transcription factor/mark, in ATAC-seq we evaluate all open/accessible regions in the genome.)
  
-![](../../imgs/igvUsles.png)
+![](imgs/igvUsles.png)
 
  
 ```{r a,eval=F}  
@@ -155,7 +155,7 @@ Common techniques used to visualise genomics data include dimension reduction an
 These techniques allows us to better identify patterns within our data such as reproducibility of replicates within groups and magnitude of changes in signal between groups.
 
 <div align="center">
-<img src="../../imgs/large.png" alt="igv" height="400" width="800">
+<img src="imgs/large.png" alt="igv" height="400" width="800">
 </div>
 
 ---
@@ -301,7 +301,7 @@ We hope the strongest patterns or sources of variation in our data are correlate
 Common methods of dimention reduction include Principal Component Analysis, MultiFactorial Scaling and Non-negative Matrix Factorization.
 
 <div align="center">
-<img src="../../imgs/metaGeneFull.png" alt="igv" height="300" width="800">
+<img src="imgs/metaGeneFull.png" alt="igv" height="300" width="800">
 </div>
 
 ---

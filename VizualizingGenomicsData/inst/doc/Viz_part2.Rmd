@@ -180,6 +180,12 @@ library(Gviz)
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 
 
+bgrTrack <- BiomartGeneRegionTrack(genome="mm10",
+                                   start=109672700,
+                                   end=109729043,
+                                   chromosome = "2",
+                                   name="ENSEMBL")
+
 library(biomaRt)
 martList <- listMarts()
 mart = useMart("ENSEMBL_MART_ENSEMBL")
@@ -188,7 +194,8 @@ mart = useMart("ENSEMBL_MART_ENSEMBL", dataset="mmusculus_gene_ensembl")
 
 bgrTrack <- BiomartGeneRegionTrack(genome="mm10",
                                    start=109672700,
-                                   end=109729043,biomart = mart,
+                                   end=109729043,
+                                   biomart = mart,
                                    chromosome = "2",
                                    name="ENSEMBL")
 
