@@ -73,9 +73,9 @@ plotRegion(melSi)
 plotRegion(ch12Si)
 ```
 
-![](imgs/Exercise1.png)
+![](imgs/exercise1.png)
 
-![](imgs/Exercise2.png)
+![](imgs/exercise2.png)
 
 - Produce heatmaps for peaks on chr19 for each sample.
 
