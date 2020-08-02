@@ -6,10 +6,11 @@ knitr
 yaml
 ymlthis
 stringr
-compileCourses
+magrittr
 BiocGenerics
 S4Vectors
 IRanges
+compileCourses
 GenomeInfoDb
 GenomicRanges
 Biobase
