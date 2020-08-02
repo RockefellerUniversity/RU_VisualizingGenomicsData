@@ -962,17 +962,16 @@ k2 <- plotHeatmap(CTCF_Mel_Up[[2]],
 </div>
 
 
----
 ##Exercises 
 
  
-Time for exercises! [Link here](../../Exercises/Viz_part4_exercises.html) 
+Time for exercises! [Link here](../../exercises/exercises/Viz_part4_exercise.html) 
  
 ---
 ##Solutions 
 
  
-Time for solutions! [Link here](../../Answers/Viz_part4_answers.html) 
+Time for solutions! [Link here](../../exercises/answers/Viz_part4_answers.html) 
  
 
  
