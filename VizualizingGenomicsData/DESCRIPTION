@@ -8,7 +8,7 @@ Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: What license is it under?
 biocViews: Training
-Depends: Rsamtools, GenomicAlignments, TxDb.Mmusculus.UCSC.mm10.knownGene, org.Mm.eg.db, Gviz, rtracklayer, TxDb.Mmusculus.UCSC.mm9.knownGene, TxDb.Mmusculus.UCSC.mm10.knownGene, GenomicAlignments, DESeq2, tximport, org.Mm.eg.db, goseq, DEXSeq, limma, rtracklayer, IRanges , TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, BSgenome.Mmusculus.UCSC.mm10, biomaRt, BSgenome.Hsapiens.UCSC.hg19, vsn, ChIPQC, MotifDb, seqLogo, pheatmap, soGGi
+Depends: Rsamtools, GenomicAlignments, TxDb.Mmusculus.UCSC.mm10.knownGene, org.Mm.eg.db, Gviz, rtracklayer, TxDb.Mmusculus.UCSC.mm9.knownGene, TxDb.Mmusculus.UCSC.mm10.knownGene, GenomicAlignments, DESeq2, tximport, org.Mm.eg.db, goseq, DEXSeq, limma, rtracklayer, IRanges , TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, BSgenome.Mmusculus.UCSC.mm10, biomaRt, BSgenome.Hsapiens.UCSC.hg19, vsn, ChIPQC, MotifDb, seqLogo, pheatmap, soGGi, profileplyr
 Encoding: UTF-8
 LazyData: true
 Suggests: knitr,
