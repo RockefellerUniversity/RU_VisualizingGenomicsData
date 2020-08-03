@@ -5,5 +5,5 @@
 This section introduces the visualization of Genomics data in Bioconductor
 Session sections:
 
-* Plotting aligned reads from BAM
-* Visualization of external data from Biomart and UCSC
+* Epigenetic and motif profiles
+* Profileplyr heatmaps
