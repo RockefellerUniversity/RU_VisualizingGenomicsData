@@ -961,6 +961,95 @@ k2 <- plotHeatmap(CTCF_Mel_Up[[2]],
 <img src="imgs/P36.png" alt="igv" height="300" width="500">
 </div>
 
+---
+# profileplyr
+
+The heatmaps generated in soGGi however arent as customisable as we would like.
+
+The **profileplyr** written by [Doug Barrows](https://dougbarrows.github.io) (Allis lab/BRC) provides a framework for plotting and manipulating genomic signal heatmaps.
+
+```{r}
+library(profileplyr)
+
+```
+
+---
+# profileplyr
+
+The profileplyr package has methods to import/export signal heatmaps from external sources such as DeepTools but usefully here can translate our soGGi ChIPprofile objects to profileplyr objects.
+
+The **profileplyr** object is a version of *Ranged*SummarizedExperiment object we should already recognise.
+
+```{r}
+ctcfProPlyr <- as_profileplyr(CTCF)
+class(ctcfProPlyr)
+ctcfProPlyr
+```
+
+---
+# profileplyr
+
+This means we can act on the object like any other *Ranged*SummarisedExperiment object including subsetting by GRanges.
+
+```{r}
+ExampleGR <- GRanges("chr1:1-10000000")
+ctcfProPlyr[ctcfProPlyr %over% ExampleGR]
+```
+
+---
+# profileplyr
+
+Before we do any plotting we will subset our profileplyr object to just CTCF peaks changing between Mel and Ch12 cell-lines.
+
+We can use the mcols of our profileplyr object to subset to genes of interest.
+
+```{r}
+ctcfProPlyr <- ctcfProPlyr[mcols(ctcfProPlyr)$name %in% c(UpInMel,DownInMel),]
+```
+
+
+---
+# profileplyr
+
+Once we have the profileplyr object filtered to the data of interest, we can create our heatmap using the **generateEnrichedHeatmap** function.
+
+```{r,eval=FALSE}
+generateEnrichedHeatmap(ctcfProPlyr)
+```
+<div align="center">
+<img src="imgs/generateEnrichedHeatmap.png" alt="igv" height="300" width="400">
+</div>
+
+
+---
+# profileplyr
+
+We can perform clustering of our profileplyr object using the **clusterRanges()** function.
+
+By default this will perform hierarchical clustering and plot the result summarised within peaks.
+
+```{r,eval=TRUE,fig.height=4,fig.width=7}
+ctcfProPlyr <- clusterRanges(ctcfProPlyr)
+```
+
+---
+# profileplyr
+
+We can now replot our heatmap using the new clustering.
+
+We must first tell the profileplyr object which metadata column to use for clustering/ordering the heatmap using the **orderBy** function.
+
+```{r,eval=FALSE}
+ctcfProPlyr <- orderBy(tem,"hierarchical_order")
+generateEnrichedHeatmap(ctcfProPlyr)
+```
+
+<div align="center">
+<img src="imgs/CTCF_ppClustered.png" alt="igv" height="300" width="400">
+</div>
+
+
+---
 
 ##Exercises 
 
