@@ -9,6 +9,8 @@ library(org.Mm.eg.db)
 library(goseq)
 library(rtracklayer)
 library(vsn)
+library(ggplot2)
+library(pheatmap)
 options(ucscChromosomeNames=FALSE)
 
 
@@ -71,7 +73,7 @@ boxplot(matrixOfNorm)
 
 ## ----gnTMP,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gnTM",warning=FALSE,message=FALSE,fig.height=4,fig.width=7----
 library(vsn)
-meanSdPlot(matrixOfNorm)
+vsn::meanSdPlot(matrixOfNorm)
 
 
 ## ----gRL,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gD",warning=FALSE,message=FALSE----
@@ -81,7 +83,7 @@ rlogTissue
 
 ## ----gRLM,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gRL",warning=FALSE,message=FALSE,fig.height=4,fig.width=7----
 rlogMatrix <- assay(rlogTissue)
-meanSdPlot(rlogMatrix)
+vsn::meanSdPlot(rlogMatrix)
 
 
 ## ----gPCA,eval=TRUE,echo=TRUE,cache=TRUE,dependson="gRLM",warning=FALSE,message=FALSE,fig.height=3,fig.width=7----
@@ -256,6 +258,33 @@ pheatmap(OrderByCluster,
            scale="row",annotation_row = clusterDF,
            show_rownames = FALSE,cluster_rows = FALSE)
 
+
+
+## ----kms5,eval=FALSE,echo=TRUE,cache=FALSE,dependson="km4",warning=FALSE,message=FALSE----
+## library(NbClust)
+## rowScaledMat <- t(scale(t(sigMat)))
+## clusterNum <- NbClust(rowScaledMat,distance = "euclidean",
+##           min.nc = 2, max.nc = 12,
+##           method = "kmeans", index ="silhouette")
+## 
+## clusterNum$Best.nc
+
+
+## ----include=FALSE------------------------------------------------------------
+load("data/ClusterNum.RData")
+clusterNum$Best.nc
+
+
+## ----kmsh,eval=TRUE,echo=TRUE,cache=FALSE,dependson="km4",warning=FALSE,message=FALSE----
+clusterNum$Best.partition[1:10]
+orderedCluster <- sort(clusterNum$Best.partition)
+sigMat <- sigMat[match(names(orderedCluster),rownames(sigMat)),]
+
+
+## ----kmsha,eval=TRUE,echo=TRUE,cache=FALSE,dependson="km4",warning=FALSE,message=FALSE----
+pheatmap(sigMat,
+           scale="row",annotation_row = clusterDF,
+           show_rownames = FALSE,cluster_rows = FALSE)
 
 
 ## ----km5,eval=TRUE,echo=TRUE,cache=TRUE,dependson="km4",warning=FALSE,message=FALSE----

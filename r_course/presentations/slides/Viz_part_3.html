@@ -270,7 +270,7 @@ When visualising our signal however we now will have a similar problem with smal
 
 ```r
 library(vsn)
-meanSdPlot(matrixOfNorm)
+vsn::meanSdPlot(matrixOfNorm)
 ```
 
 ![](Viz_part_3_files/figure-html/gnTMP-1.png)&lt;!-- --&gt;
@@ -308,7 +308,7 @@ Again we can extract the matrix of transformed counts with the **assay()** funct
 
 ```r
 rlogMatrix &lt;- assay(rlogTissue)
-meanSdPlot(rlogMatrix)
+vsn::meanSdPlot(rlogMatrix)
 ```
 
 ![](Viz_part_3_files/figure-html/gRLM-1.png)&lt;!-- --&gt;
@@ -737,6 +737,113 @@ pheatmap(OrderByCluster,
 ```
 
 ![](Viz_part_3_files/figure-html/km4r-1.png)&lt;!-- --&gt;
+---
+## Identifying optimal clusters.
+
+Methods exist to identify the optimal number of clusters within your data.
+
+One such method is to assess the **silhoutte** score at different successive cluster numbers and choose the cluster number with the highest mean **silhoutte** score.
+
+The **Silhouette** method evaluates the similarity of cluster members to the similarity between clusters as below.
+
+For all genes/samples, the dissimilarity for a cluster member to its own cluster , &lt;math xmlns="http://www.w3.org/1998/Math/MathML"&gt;&lt;msub&gt;&lt;mi&gt;a&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;/math&gt;,  is calculated as the mean distance between a cluster member and all other members of that cluster. Further to this the minimun, mean dissimilarity of the cluster member to members of other clusters is calculated, &lt;math xmlns="http://www.w3.org/1998/Math/MathML"&gt;&lt;msub&gt;&lt;mi&gt;b&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;/math&gt;. 
+
+&lt;math xmlns="http://www.w3.org/1998/Math/MathML"&gt;
+  &lt;msub&gt;
+    &lt;mi&gt;S&lt;/mi&gt;
+    &lt;mi&gt;i&lt;/mi&gt;
+  &lt;/msub&gt;
+  &lt;mo&gt;=&lt;/mo&gt;
+  &lt;mo stretchy="false"&gt;(&lt;/mo&gt;
+  &lt;msub&gt;
+    &lt;mi&gt;b&lt;/mi&gt;
+    &lt;mi&gt;i&lt;/mi&gt;
+  &lt;/msub&gt;
+  &lt;mo&gt;&amp;#x2212;&lt;!-- − --&gt;&lt;/mo&gt;
+  &lt;msub&gt;
+    &lt;mi&gt;a&lt;/mi&gt;
+    &lt;mi&gt;i&lt;/mi&gt;
+  &lt;/msub&gt;
+  &lt;mo stretchy="false"&gt;)&lt;/mo&gt;
+  &lt;mrow class="MJX-TeXAtom-ORD"&gt;
+    &lt;mo&gt;/&lt;/mo&gt;
+  &lt;/mrow&gt;
+  &lt;mi&gt;m&lt;/mi&gt;
+  &lt;mi&gt;a&lt;/mi&gt;
+  &lt;mi&gt;x&lt;/mi&gt;
+  &lt;mo stretchy="false"&gt;(&lt;/mo&gt;
+  &lt;msub&gt;
+    &lt;mi&gt;a&lt;/mi&gt;
+    &lt;mi&gt;i&lt;/mi&gt;
+  &lt;/msub&gt;
+  &lt;mo&gt;,&lt;/mo&gt;
+  &lt;msub&gt;
+    &lt;mi&gt;b&lt;/mi&gt;
+    &lt;mi&gt;i&lt;/mi&gt;
+  &lt;/msub&gt;
+  &lt;mo stretchy="false"&gt;)&lt;/mo&gt;
+&lt;/math&gt;
+
+---
+## Identifying number of clusters.
+
+We can use the NbClust package to calculate the **Silhoutte** scores over successive cluster numbers.
+We supply the scaled matrix to the *NbClust* function and set the min and maximum cluster numbers to try using the **min.nc** and **max.nc** respectively.
+
+We can retrieve the optimal cluster number from the **Best.nc** slot of our result list. Here we see the number is lower at 3, a cluster for every sample group's unique gene expression signature.
+
+
+```r
+library(NbClust)
+rowScaledMat &lt;- t(scale(t(sigMat)))
+clusterNum &lt;- NbClust(rowScaledMat,distance = "euclidean",
+          min.nc = 2, max.nc = 12, 
+          method = "kmeans", index ="silhouette")
+
+clusterNum$Best.nc
+```
+
+
+
+---
+## Identifying number of clusters.
+
+We can the use the **Best.partition** slot to extract the cluster membership as we did with pheatmap.
+
+We can arrange our matrix by using the **match** function between the row names of our matrix and the names of genes in our new cluster membership vector.
+
+
+
+```r
+clusterNum$Best.partition[1:10]
+```
+
+```
+##     20671     27395     18777     21399    108664    319263     76187     70675 
+##         2         2         1         3         1         3         1         3 
+##     73824 100039596 
+##         3         1
+```
+
+```r
+orderedCluster &lt;- sort(clusterNum$Best.partition)
+sigMat &lt;- sigMat[match(names(orderedCluster),rownames(sigMat)),]
+```
+
+---
+## Identifying number of clusters.
+
+We can now visualise the new clustering alognside our old clustering.
+
+
+```r
+pheatmap(sigMat,
+           scale="row",annotation_row = clusterDF,
+           show_rownames = FALSE,cluster_rows = FALSE)
+```
+
+![](Viz_part_3_files/figure-html/kmsha-1.png)&lt;!-- --&gt;
+
 ---
 ## Testing gene clusters
 

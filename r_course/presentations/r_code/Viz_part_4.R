@@ -474,3 +474,36 @@ load("data//CTCF_gene_P.RData")
 ##                   col = colorRampPalette(blues9)(100),
 ##                   maxValue=15)
 
+
+## -----------------------------------------------------------------------------
+library(profileplyr)
+
+
+
+## -----------------------------------------------------------------------------
+ctcfProPlyr <- as_profileplyr(CTCF)
+class(ctcfProPlyr)
+ctcfProPlyr
+
+
+## -----------------------------------------------------------------------------
+ExampleGR <- GRanges("chr1:1-10000000")
+ctcfProPlyr[ctcfProPlyr %over% ExampleGR]
+
+
+## -----------------------------------------------------------------------------
+ctcfProPlyr <- ctcfProPlyr[mcols(ctcfProPlyr)$name %in% c(UpInMel,DownInMel),]
+
+
+## ----eval=FALSE---------------------------------------------------------------
+## generateEnrichedHeatmap(ctcfProPlyr)
+
+
+## ----eval=TRUE,fig.height=4,fig.width=7---------------------------------------
+ctcfProPlyr <- clusterRanges(ctcfProPlyr)
+
+
+## ----eval=FALSE---------------------------------------------------------------
+## ctcfProPlyr <- orderBy(tem,"hierarchical_order")
+## generateEnrichedHeatmap(ctcfProPlyr)
+

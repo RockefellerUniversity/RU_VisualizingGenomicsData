@@ -1024,6 +1024,157 @@ k2 &lt;- plotHeatmap(CTCF_Mel_Up[[2]],
 &lt;img src="imgs/P36.png" alt="igv" height="300" width="500"&gt;
 &lt;/div&gt;
 
+---
+# profileplyr
+
+The heatmaps generated in soGGi however arent as customisable as we would like.
+
+The **profileplyr** written by [Doug Barrows](https://dougbarrows.github.io) (Allis lab/BRC) provides a framework for plotting and manipulating genomic signal heatmaps.
+
+
+```r
+library(profileplyr)
+```
+
+```
+## 
+```
+
+```
+## 
+## Attaching package: 'profileplyr'
+```
+
+```
+## The following object is masked from 'package:S4Vectors':
+## 
+##     params
+```
+
+---
+# profileplyr
+
+The profileplyr package has methods to import/export signal heatmaps from external sources such as DeepTools but usefully here can translate our soGGi ChIPprofile objects to profileplyr objects.
+
+The **profileplyr** object is a version of *Ranged*SummarizedExperiment object we should already recognise.
+
+
+```r
+ctcfProPlyr &lt;- as_profileplyr(CTCF)
+class(ctcfProPlyr)
+```
+
+```
+## [1] "profileplyr"
+## attr(,"package")
+## [1] "profileplyr"
+```
+
+```r
+ctcfProPlyr
+```
+
+```
+## class: profileplyr 
+## dim: 61639 1501 
+## metadata(0):
+## assays(2): Sorted_CTCF_MEL_1Normalised.bw
+##   Sorted_CTCF_Ch12_1Normalised.bw
+## rownames(61639): giID2175 giID2176 ... giID59822 giID59823
+## rowData names(12): baseMean log2FoldChange ... names sgGroup
+## colnames(1501): Point_Centre-750 Point_Centre-749 ... Point_Centre749
+##   Point_Centre750
+## colData names(0):
+```
+
+---
+# profileplyr
+
+This means we can act on the object like any other *Ranged*SummarisedExperiment object including subsetting by GRanges.
+
+
+```r
+ExampleGR &lt;- GRanges("chr1:1-10000000")
+ctcfProPlyr[ctcfProPlyr %over% ExampleGR]
+```
+
+```
+## class: profileplyr 
+## dim: 81 1501 
+## metadata(0):
+## assays(2): Sorted_CTCF_MEL_1Normalised.bw
+##   Sorted_CTCF_Ch12_1Normalised.bw
+## rownames(81): giID2233 giID2238 ... giID6060 giID6128
+## rowData names(12): baseMean log2FoldChange ... names sgGroup
+## colnames(1501): Point_Centre-750 Point_Centre-749 ... Point_Centre749
+##   Point_Centre750
+## colData names(0):
+```
+
+---
+# profileplyr
+
+Before we do any plotting we will subset our profileplyr object to just CTCF peaks changing between Mel and Ch12 cell-lines.
+
+We can use the mcols of our profileplyr object to subset to genes of interest.
+
+
+```r
+ctcfProPlyr &lt;- ctcfProPlyr[mcols(ctcfProPlyr)$name %in% c(UpInMel,DownInMel),]
+```
+
+
+---
+# profileplyr
+
+Once we have the profileplyr object filtered to the data of interest, we can create our heatmap using the **generateEnrichedHeatmap** function.
+
+
+```r
+generateEnrichedHeatmap(ctcfProPlyr)
+```
+&lt;div align="center"&gt;
+&lt;img src="imgs/generateEnrichedHeatmap.png" alt="igv" height="300" width="400"&gt;
+&lt;/div&gt;
+
+
+---
+# profileplyr
+
+We can perform clustering of our profileplyr object using the **clusterRanges()** function.
+
+By default this will perform hierarchical clustering and plot the result summarised within peaks.
+
+
+```r
+ctcfProPlyr &lt;- clusterRanges(ctcfProPlyr)
+```
+
+```
+## No 'kmeans_k' or 'cutree_rows' arguments specified. profileplyr object will be returned new column with hierarchical order from hclust
+```
+
+![](Viz_part_4_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
+---
+# profileplyr
+
+We can now replot our heatmap using the new clustering.
+
+We must first tell the profileplyr object which metadata column to use for clustering/ordering the heatmap using the **orderBy** function.
+
+
+```r
+ctcfProPlyr &lt;- orderBy(tem,"hierarchical_order")
+generateEnrichedHeatmap(ctcfProPlyr)
+```
+
+&lt;div align="center"&gt;
+&lt;img src="imgs/CTCF_ppClustered.png" alt="igv" height="300" width="400"&gt;
+&lt;/div&gt;
+
+
+---
 
 ##Exercises 
 
