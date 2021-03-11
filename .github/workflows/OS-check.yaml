@@ -43,7 +43,7 @@ jobs:
       - name: Query dependencies
         run: |
           install.packages('remotes')
-          saveRDS(remotes::dev_package_deps("RU_VisualizingGenomicsData/",dependencies = TRUE), ".github/depends.Rds", version = 2)
+          saveRDS(remotes::dev_package_deps("VisualizingGenomicsData/",dependencies = TRUE), ".github/depends.Rds", version = 2)
           writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
         shell: Rscript {0}
 
@@ -65,7 +65,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          remotes::install_deps("RU_VisualizingGenomicsData/",dependencies = TRUE)
+          remotes::install_deps("VisualizingGenomicsData/",dependencies = TRUE)
           remotes::install_cran("rcmdcheck")
           remotes::install_cran("BiocManager")
           BiocManager::install("rmarkdown")
@@ -83,11 +83,11 @@ jobs:
       - name: Install package
         if: github.ref == 'refs/heads/master' 
         run: |
-          devtools::install("RU_VisualizingGenomicsData/",dependencies = TRUE,quick = TRUE)
+          devtools::install("VisualizingGenomicsData/",dependencies = TRUE,quick = TRUE)
         shell: Rscript {0}
 
       - name: CompileCourse
         run: |
           require(compileCourses)
-          compileCourses::compileSingleCourseMaterial(repo="RockefellerUniversity",subdir="RU_VisualizingGenomicsData",branch="master")
+          compileCourses::compileSingleCourseMaterial(repo="RockefellerUniversity",subdir="VisualizingGenomicsData",branch="master")
         shell: Rscript {0}
