@@ -214,6 +214,14 @@ We can then plot this **SequenceTrack**, as with all tracks, using the **plotTra
 
 ```r
 sTrack &lt;- SequenceTrack(Hsapiens) 
+```
+
+```
+## Warning:   Using providerVersion() on a BSgenome object is deprecated. Please use
+##   'metadata(x)$genome' instead.
+```
+
+```r
 plotTracks(sTrack,from=134887024,to=134887074, 
            chromosome = "chr7",cex=2.5) 
 ```
@@ -606,6 +614,14 @@ One method for this is to attach sequence information to the **AlignmentsTrack**
 ```r
 library(BSgenome.Mmusculus.UCSC.mm10)
 sTrack &lt;- SequenceTrack(BSgenome.Mmusculus.UCSC.mm10) 
+```
+
+```
+## Warning:   Using providerVersion() on a BSgenome object is deprecated. Please use
+##   'metadata(x)$genome' instead.
+```
+
+```r
 activatedReads &lt;- AlignmentsTrack("data/activatedSNPread.bam", 
                            isPaired = TRUE, 
                            referenceSequence=sTrack) 
